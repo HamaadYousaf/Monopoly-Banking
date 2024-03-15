@@ -1,7 +1,9 @@
 import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
+import jwt from "jsonwebtoken";
 import { prismaInstance } from "../server";
+import env from "../util/validateEnv";
 
 export const getAuthenticatedUser = () => {};
 
@@ -35,8 +37,12 @@ export const login: RequestHandler<
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            throw createHttpError(401, "Invalid credentials");
+            throw createHttpError(401, "Invalid credentials", {
+                expiresIn: 300,
+            });
         }
+
+        const token = jwt.sign(user.id, env.SECRET_KEY);
 
         res.status(200).send({
             data: {
@@ -44,6 +50,8 @@ export const login: RequestHandler<
                 username: user.username,
                 email: user.email,
                 roomId: user.roomId,
+                auth: true,
+                token: token,
             },
         });
     } catch (error) {

@@ -6,6 +6,7 @@ import { handleError } from "./middleware/error";
 import bankRoutes from "./routes/bank";
 import roomRoutes from "./routes/room";
 import userRoutes from "./routes/user";
+import { authenticateJWT } from "./middleware/auth";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/user", userRoutes);
+app.use(authenticateJWT);
 app.use("/api/room", roomRoutes);
 app.use("/api/bank", bankRoutes);
 
