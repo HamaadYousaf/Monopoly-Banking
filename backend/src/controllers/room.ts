@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import { prismaInstance } from "../server";
+import { asserIsDefined } from "../util/assertIsDefined";
 
 interface CreateRoomBody {
     username: string;
@@ -40,28 +41,20 @@ export const createRoom: RequestHandler<
     }
 };
 
-interface JoinLeaveRoomBody {
-    username: string;
-    roomId: string;
-}
-
-export const joinRoom: RequestHandler<
-    unknown,
-    unknown,
-    JoinLeaveRoomBody,
-    unknown
-> = async (req, res, next) => {
-    const username = req.body.username;
+export const joinRoom: RequestHandler = async (req, res, next) => {
+    const userId = req.token;
     const roomId = req.body.roomId;
 
     try {
-        if (!username || !roomId) {
+        asserIsDefined(userId);
+
+        if (!roomId) {
             throw createHttpError(400, "Missing parameters");
         }
 
         const isUserInRoom = await prismaInstance.user.findUnique({
             where: {
-                username: username,
+                id: userId,
             },
         });
 
@@ -71,7 +64,7 @@ export const joinRoom: RequestHandler<
 
         const userJoined = await prismaInstance.user.update({
             where: {
-                username: username,
+                id: userId,
             },
             data: {
                 roomId: roomId,
@@ -80,7 +73,7 @@ export const joinRoom: RequestHandler<
 
         const userBank = await prismaInstance.bank.create({
             data: {
-                userId: userJoined.id,
+                userId: userId,
                 roomId: roomId,
                 balance: 0,
             },
@@ -92,33 +85,30 @@ export const joinRoom: RequestHandler<
     }
 };
 
-export const leaveRoom: RequestHandler<
-    unknown,
-    unknown,
-    JoinLeaveRoomBody,
-    unknown
-> = async (req, res, next) => {
-    const username = req.body.username;
+export const leaveRoom: RequestHandler = async (req, res, next) => {
+    const userId = req.token;
     const roomId = req.body.roomId;
 
     try {
-        if (!username || !roomId) {
+        asserIsDefined(userId);
+
+        if (!roomId) {
             throw createHttpError(400, "Missing parameters");
         }
 
         const user = await prismaInstance.user.findUnique({
             where: {
-                username: username,
+                id: userId,
             },
         });
 
-        if (user?.roomId !== roomId || !user.roomId) {
+        if (user?.roomId !== roomId || !user?.roomId) {
             throw createHttpError(409, "User is not in room");
         }
 
         const userJoined = await prismaInstance.user.update({
             where: {
-                username: username,
+                id: userId,
             },
             data: {
                 roomId: null,

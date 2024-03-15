@@ -1,11 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import env from "../util/validateEnv";
-
-interface userAuthRequest extends Request {
-    token: string | JwtPayload;
-}
 
 export const authenticateJWT = (
     req: Request,
@@ -25,7 +21,7 @@ export const authenticateJWT = (
             throw createHttpError(401, "Unauthorized");
         }
 
-        (req as userAuthRequest).token = decoded;
+        req.token = decoded;
 
         next();
     } catch (error) {
