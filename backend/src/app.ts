@@ -2,11 +2,11 @@ import cors from "cors";
 import express from "express";
 import createHttpError from "http-errors";
 import morgan from "morgan";
+import { authenticateJWT } from "./middleware/auth";
 import { handleError } from "./middleware/error";
 import bankRoutes from "./routes/bank";
 import roomRoutes from "./routes/room";
 import userRoutes from "./routes/user";
-import { authenticateJWT } from "./middleware/auth";
 
 const app = express();
 

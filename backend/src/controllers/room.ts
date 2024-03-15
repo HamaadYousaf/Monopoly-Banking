@@ -78,7 +78,15 @@ export const joinRoom: RequestHandler<
             },
         });
 
-        res.status(201).send({ data: userJoined });
+        const userBank = await prismaInstance.bank.create({
+            data: {
+                userId: userJoined.id,
+                roomId: roomId,
+                balance: 0,
+            },
+        });
+
+        res.status(201).send({ data: { user: userJoined, balance: userBank } });
     } catch (error) {
         next(error);
     }
@@ -98,12 +106,28 @@ export const leaveRoom: RequestHandler<
             throw createHttpError(400, "Missing parameters");
         }
 
+        const user = await prismaInstance.user.findUnique({
+            where: {
+                username: username,
+            },
+        });
+
+        if (user?.roomId !== roomId || !user.roomId) {
+            throw createHttpError(409, "User is not in room");
+        }
+
         const userJoined = await prismaInstance.user.update({
             where: {
                 username: username,
             },
             data: {
                 roomId: null,
+            },
+        });
+
+        await prismaInstance.bank.delete({
+            where: {
+                userId: user.id,
             },
         });
 

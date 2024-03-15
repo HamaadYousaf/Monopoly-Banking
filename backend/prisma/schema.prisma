@@ -20,10 +20,21 @@ model User {
     password String
     Room     Room?   @relation(fields: [roomId], references: [id])
     roomId   String?
+    Bank     Bank[]
 }
 
 model Room {
     id     String @id @default(uuid())
     banker String
     users  User[]
+    Bank   Bank[]
+}
+
+model Bank {
+    id      String @id @default(uuid())
+    room    Room   @relation(fields: [roomId], references: [id])
+    user    User   @relation(fields: [userId], references: [id])
+    roomId  String
+    userId  String @unique
+    balance Int
 }
