@@ -38,15 +38,14 @@ export const login: RequestHandler<
             throw createHttpError(401, "Invalid credentials");
         }
 
-        // res.status(200).send({
-        //     data: {
-        //         id: user.id,
-        //         username: user.username,
-        //         email: user.email,
-        //     },
-        // });
-
-        res.status(200).send({ data: user });
+        res.status(200).send({
+            data: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                roomId: user.roomId,
+            },
+        });
     } catch (error) {
         next(error);
     }

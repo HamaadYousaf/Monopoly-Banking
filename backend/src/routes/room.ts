@@ -6,5 +6,6 @@ router.get("/", roomController.getRooms);
 router.get("/:roomId", roomController.getRoom);
 router.post("/create", roomController.createRoom);
 router.post("/join", roomController.joinRoom);
+router.post("/leave", roomController.leaveRoom);
 
 export default router;

@@ -40,7 +40,7 @@ export const createRoom: RequestHandler<
     }
 };
 
-interface JoinRoomBody {
+interface JoinLeaveRoomBody {
     username: string;
     roomId: string;
 }
@@ -48,12 +48,50 @@ interface JoinRoomBody {
 export const joinRoom: RequestHandler<
     unknown,
     unknown,
-    JoinRoomBody,
+    JoinLeaveRoomBody,
     unknown
 > = async (req, res, next) => {
     const username = req.body.username;
     const roomId = req.body.roomId;
-    console.log(roomId);
+
+    try {
+        if (!username || !roomId) {
+            throw createHttpError(400, "Missing parameters");
+        }
+
+        const isUserInRoom = await prismaInstance.user.findUnique({
+            where: {
+                username: username,
+            },
+        });
+
+        if (isUserInRoom?.roomId) {
+            throw createHttpError(409, "User is already in a room");
+        }
+
+        const userJoined = await prismaInstance.user.update({
+            where: {
+                username: username,
+            },
+            data: {
+                roomId: roomId,
+            },
+        });
+
+        res.status(201).send({ data: userJoined });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const leaveRoom: RequestHandler<
+    unknown,
+    unknown,
+    JoinLeaveRoomBody,
+    unknown
+> = async (req, res, next) => {
+    const username = req.body.username;
+    const roomId = req.body.roomId;
 
     try {
         if (!username || !roomId) {
@@ -65,7 +103,7 @@ export const joinRoom: RequestHandler<
                 username: username,
             },
             data: {
-                roomId: roomId,
+                roomId: null,
             },
         });
 
