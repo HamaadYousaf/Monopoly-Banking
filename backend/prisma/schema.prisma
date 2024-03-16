@@ -24,10 +24,11 @@ model User {
 }
 
 model Room {
-    id     String @id @default(uuid())
-    banker String
-    users  User[]
-    Bank   Bank[]
+    id          String        @id @default(uuid())
+    banker      String
+    users       User[]
+    Bank        Bank[]
+    FreeParking FreeParking[]
 }
 
 model Bank {
@@ -36,5 +37,12 @@ model Bank {
     user    User   @relation(fields: [userId], references: [id])
     roomId  String
     userId  String @unique
+    balance Int
+}
+
+model FreeParking {
+    id      String @id @default(uuid())
+    room    Room   @relation(fields: [roomId], references: [id])
+    roomId  String @unique
     balance Int
 }

@@ -1,11 +1,14 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import { prismaInstance } from "../server";
+import { asserIsDefined } from "../util/assertIsDefined";
 
 export const getBalance: RequestHandler = async (req, res, next) => {
-    const userId = req.params.userId;
+    const userId = req.token;
 
     try {
+        asserIsDefined(userId);
+
         const balance = await prismaInstance.bank.findFirst({
             where: {
                 userId: userId,
@@ -28,6 +31,7 @@ interface TransferBody {
     roomId: string;
     amount: number;
 }
+
 export const transfer: RequestHandler<
     unknown,
     unknown,
@@ -108,8 +112,6 @@ export const transfer: RequestHandler<
     }
 };
 
-export const claimFreeParking = () => {};
-
 interface DepositBody {
     userId: string;
     roomId: string;
@@ -153,6 +155,171 @@ export const deposit: RequestHandler<
         });
 
         res.status(201).send({ data: newUserBank });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getFreeParking: RequestHandler = async (req, res, next) => {
+    const userId = req.token;
+
+    try {
+        asserIsDefined(userId);
+
+        const user = await prismaInstance.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user || !user.roomId) {
+            throw createHttpError(409, "User not found");
+        }
+
+        const freeParking = await prismaInstance.freeParking.findUnique({
+            where: {
+                roomId: user.roomId,
+            },
+        });
+
+        if (!freeParking) {
+            throw createHttpError(409, "Could not find free parking");
+        }
+
+        res.status(200).send({ data: freeParking });
+    } catch (error) {
+        next(error);
+    }
+};
+
+interface ClaimParking {
+    userId: string;
+    roomId: string;
+}
+
+export const claimFreeParking: RequestHandler<
+    unknown,
+    unknown,
+    ClaimParking,
+    unknown
+> = async (req, res, next) => {
+    const userId = req.body.userId;
+    const roomId = req.body.roomId;
+
+    try {
+        if (!userId || !roomId) {
+            throw createHttpError(400, "Missing parameters");
+        }
+
+        const userBank = await prismaInstance.bank.findFirst({
+            where: {
+                userId: userId,
+            },
+        });
+
+        const freeParking = await prismaInstance.freeParking.findUnique({
+            where: {
+                roomId: roomId,
+            },
+        });
+
+        if (userBank?.roomId !== roomId || !userBank || !freeParking) {
+            throw createHttpError(409, "User is not in room");
+        }
+
+        const newBalance = freeParking.balance + userBank.balance;
+
+        const newUserBank = await prismaInstance.bank.update({
+            where: {
+                userId: userId,
+            },
+            data: {
+                balance: newBalance,
+            },
+        });
+
+        const newParking = await prismaInstance.freeParking.update({
+            where: {
+                roomId: roomId,
+            },
+            data: {
+                balance: 0,
+            },
+        });
+
+        res.status(201).send({
+            data: { user: newUserBank, parking: newParking },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+interface SendParkingBody {
+    roomId: string;
+    amount: number;
+}
+
+export const sendFreeParking: RequestHandler<
+    unknown,
+    unknown,
+    SendParkingBody,
+    unknown
+> = async (req, res, next) => {
+    const userId = req.token;
+    const roomId = req.body.roomId;
+    const amount = req.body.amount;
+
+    try {
+        if (!userId || !roomId || !amount) {
+            throw createHttpError(400, "Missing parameters");
+        }
+
+        const userBank = await prismaInstance.bank.findFirst({
+            where: {
+                userId: userId,
+            },
+        });
+
+        const freeParking = await prismaInstance.freeParking.findUnique({
+            where: {
+                roomId: roomId,
+            },
+        });
+
+        if (userBank?.roomId !== roomId || !userBank || !freeParking) {
+            throw createHttpError(409, "User is not in room");
+        }
+
+        const newBalance = userBank.balance - amount;
+
+        if (newBalance < 0) {
+            throw createHttpError(400, "Not enough funds");
+        }
+
+        const parkingBalance = freeParking.balance + amount;
+
+        const newUserBank = await prismaInstance.bank.update({
+            where: {
+                userId: userId,
+            },
+            data: {
+                balance: newBalance,
+            },
+        });
+
+        const newFreeParking = await prismaInstance.freeParking.update({
+            where: {
+                roomId: roomId,
+            },
+            data: {
+                balance: parkingBalance,
+            },
+        });
+
+        res.status(201).send({
+            data: { user: newUserBank, parking: newFreeParking },
+        });
     } catch (error) {
         next(error);
     }
