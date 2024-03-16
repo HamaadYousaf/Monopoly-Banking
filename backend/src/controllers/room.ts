@@ -46,11 +46,19 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        const freeParking = await prismaInstance.freeParking.create({
+            data: {
+                roomId: room.id,
+                balance: 0,
+            },
+        });
+
         res.status(201).send({
             data: {
                 user: userJoined,
                 room: room,
                 bank: userBank,
+                freeParking: freeParking,
             },
         });
     } catch (error) {
@@ -166,6 +174,7 @@ export const getRooms: RequestHandler = async (req, res, next) => {
         const room = await prismaInstance.room.findMany({
             include: {
                 users: true,
+                FreeParking: true,
             },
         });
 
@@ -189,6 +198,7 @@ export const getRoom: RequestHandler = async (req, res, next) => {
             },
             include: {
                 users: true,
+                FreeParking: true,
             },
         });
 
