@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
+import moment from "moment";
 import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
 
@@ -29,7 +30,7 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const userJoined = await prismaInstance.user.update({
+        await prismaInstance.user.update({
             where: {
                 id: userId,
             },
@@ -53,12 +54,20 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `${user.username} joined the room`,
+                time: moment().format("h:mm a"),
+                roomId: room.id,
+            },
+        });
+
         res.status(201).send({
             data: {
-                user: userJoined,
                 room: room,
                 bank: userBank,
                 freeParking: freeParking,
+                log: log,
             },
         });
     } catch (error) {
@@ -83,6 +92,15 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        const room = await prismaInstance.room.findFirst({
+            where: {
+                id: roomId,
+            },
+        });
+
+        if (!room) {
+            throw createHttpError(40, "Cannot find room");
+        }
         if (isUserInRoom?.roomId) {
             throw createHttpError(409, "User is already in a room");
         }
@@ -155,7 +173,27 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `${user.username} left the room`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
         if (room?.users.length === 0) {
+            await prismaInstance.freeParking.delete({
+                where: {
+                    roomId: roomId,
+                },
+            });
+
+            await prismaInstance.log.deleteMany({
+                where: {
+                    roomId: roomId,
+                },
+            });
+
             await prismaInstance.room.delete({
                 where: {
                     id: roomId,
@@ -163,7 +201,7 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             });
         }
 
-        res.status(201).send({ data: userJoined });
+        res.status(201).send({ data: { user: userJoined, log: log } });
     } catch (error) {
         next(error);
     }

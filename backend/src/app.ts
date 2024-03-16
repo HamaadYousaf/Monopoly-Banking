@@ -19,6 +19,7 @@ app.use("/api/user", userRoutes);
 app.use(authenticateJWT);
 app.use("/api/room", roomRoutes);
 app.use("/api/bank", bankRoutes);
+app.use("/api/logs/:roomId", bankRoutes);
 
 app.use((req, res, next) => {
     next(createHttpError(404, "Endpoint not found"));
