@@ -3,39 +3,56 @@ import createHttpError from "http-errors";
 import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
 
-interface CreateRoomBody {
-    username: string;
-}
-
-export const createRoom: RequestHandler<
-    unknown,
-    unknown,
-    CreateRoomBody,
-    unknown
-> = async (req, res, next) => {
-    const username = req.body.username;
+export const createRoom: RequestHandler = async (req, res, next) => {
+    const userId = req.token;
 
     try {
-        if (!username) {
-            throw createHttpError(400, "Missing parameters");
+        asserIsDefined(userId);
+
+        const user = await prismaInstance.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            throw createHttpError(401, "User not found");
+        }
+
+        if (user.roomId) {
+            throw createHttpError(409, "User is already in a room");
         }
 
         const room = await prismaInstance.room.create({
             data: {
-                banker: username,
+                banker: user.username,
             },
         });
 
         const userJoined = await prismaInstance.user.update({
             where: {
-                username: username,
+                id: userId,
             },
             data: {
                 roomId: room.id,
             },
         });
 
-        res.status(201).send({ data: { user: userJoined, room: room } });
+        const userBank = await prismaInstance.bank.create({
+            data: {
+                userId: userId,
+                roomId: room.id,
+                balance: 0,
+            },
+        });
+
+        res.status(201).send({
+            data: {
+                user: userJoined,
+                room: room,
+                bank: userBank,
+            },
+        });
     } catch (error) {
         next(error);
     }
