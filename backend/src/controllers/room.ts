@@ -138,6 +138,23 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        const room = await prismaInstance.room.findUnique({
+            where: {
+                id: roomId,
+            },
+            include: {
+                users: true,
+            },
+        });
+
+        if (room?.users.length === 0) {
+            await prismaInstance.room.delete({
+                where: {
+                    id: roomId,
+                },
+            });
+        }
+
         res.status(201).send({ data: userJoined });
     } catch (error) {
         next(error);
