@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
+import moment from "moment";
 import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
 
@@ -59,10 +60,17 @@ export const transfer: RequestHandler<
             where: {
                 userId: userIdSend,
             },
+            include: {
+                user: true,
+            },
         });
+
         const userBankReceive = await prismaInstance.bank.findFirst({
             where: {
                 userId: userIdReceive,
+            },
+            include: {
+                user: true,
             },
         });
 
@@ -101,10 +109,19 @@ export const transfer: RequestHandler<
             },
         });
 
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `${userBankSend.user.username} sent $${amount} to ${userBankReceive.user.username}`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
         res.status(201).send({
             data: {
                 sender: newUserBankSend,
                 reciever: newUserBankReceive,
+                log: log,
             },
         });
     } catch (error) {
@@ -137,6 +154,9 @@ export const deposit: RequestHandler<
             where: {
                 userId: userId,
             },
+            include: {
+                user: true,
+            },
         });
 
         if (userBank?.roomId !== roomId || !userBank) {
@@ -154,7 +174,15 @@ export const deposit: RequestHandler<
             },
         });
 
-        res.status(201).send({ data: newUserBank });
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `The Bank sent $${amount} to ${userBank.user.username}`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
+        res.status(201).send({ data: { user: newUserBank, log: log } });
     } catch (error) {
         next(error);
     }
@@ -215,6 +243,9 @@ export const claimFreeParking: RequestHandler<
             where: {
                 userId: userId,
             },
+            include: {
+                user: true,
+            },
         });
 
         const freeParking = await prismaInstance.freeParking.findUnique({
@@ -247,8 +278,16 @@ export const claimFreeParking: RequestHandler<
             },
         });
 
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `${userBank.user.username} claimed $${freeParking.balance} from free parking`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
         res.status(201).send({
-            data: { user: newUserBank, parking: newParking },
+            data: { user: newUserBank, parking: newParking, log: log },
         });
     } catch (error) {
         next(error);
@@ -278,6 +317,9 @@ export const sendFreeParking: RequestHandler<
         const userBank = await prismaInstance.bank.findFirst({
             where: {
                 userId: userId,
+            },
+            include: {
+                user: true,
             },
         });
 
@@ -317,8 +359,16 @@ export const sendFreeParking: RequestHandler<
             },
         });
 
+        const log = await prismaInstance.log.create({
+            data: {
+                message: `${userBank.user.username} sent $${amount} to free parking`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
         res.status(201).send({
-            data: { user: newUserBank, parking: newFreeParking },
+            data: { user: newUserBank, parking: newFreeParking, log: log },
         });
     } catch (error) {
         next(error);
