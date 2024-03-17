@@ -38,6 +38,3 @@ export const getLogs: RequestHandler = async (req, res, next) => {
         next(error);
     }
 };
-
-export const addLog = async () => {};
-export const deleteLogs = async () => {};
