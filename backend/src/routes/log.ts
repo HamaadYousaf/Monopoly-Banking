@@ -3,8 +3,8 @@ import * as logController from "../controllers/log";
 
 const router = express.Router();
 
-router.get("/", logController.getLogs);
-router.post("/add", logController.addLog);
-router.delete("/delete", logController.deleteLogs);
+router.get("/:roomId", logController.getLogs);
+router.post("/add/:roomId", logController.addLog);
+router.delete("/delete/:roomId", logController.deleteLogs);
 
 export default router;

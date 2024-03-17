@@ -49,9 +49,10 @@ model FreeParking {
 }
 
 model Log {
-    id      String @id @default(uuid())
-    time    String
-    message String
-    room    Room   @relation(fields: [roomId], references: [id])
-    roomId  String
+    id        String   @id @default(uuid())
+    time      String
+    message   String
+    room      Room     @relation(fields: [roomId], references: [id])
+    roomId    String
+    createdAt DateTime @default(now())
 }
