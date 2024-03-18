@@ -5,7 +5,23 @@ import jwt from "jsonwebtoken";
 import { prismaInstance } from "../server";
 import env from "../util/validateEnv";
 
-export const getAuthenticatedUser = () => {};
+export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
+    try {
+        const user = await prismaInstance.user.findUnique({
+            where: {
+                id: req.token,
+            },
+        });
+
+        if (!user) {
+            throw createHttpError(401, "Not Authenticated");
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        next(error);
+    }
+};
 
 interface LoginBody {
     username: string;
