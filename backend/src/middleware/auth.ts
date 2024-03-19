@@ -10,10 +10,10 @@ export const authenticateJWT = (
 ) => {
     try {
         const token = req.header("authorization")?.split(" ")[1];
-
         if (!token) {
             throw createHttpError(401, "Unauthorized");
         }
+        req.token = token;
 
         const decoded = jwt.verify(token, env.SECRET_KEY);
 
@@ -21,7 +21,7 @@ export const authenticateJWT = (
             throw createHttpError(401, "Unauthorized");
         }
 
-        req.token = decoded;
+        req.id = decoded;
 
         next();
     } catch (error) {
