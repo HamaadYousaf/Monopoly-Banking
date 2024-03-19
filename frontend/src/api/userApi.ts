@@ -1,5 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 import { User } from "../models/user";
+import { ConflictError, UnauthorizedError } from "../utils/http_errors";
 
 export const fetchData = async (
     url: string,
@@ -15,11 +16,15 @@ export const fetchData = async (
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            // if (error.response?.status === 401) {
-            //     throw new UnauthorizedError(error.message);
-            // } else if (error.response?.status === 409) {
-            //     throw new ConflictError(error.message);
-            // }
+            if (error.response?.status === 401) {
+                throw new UnauthorizedError(
+                    JSON.stringify(error.response.data.error)
+                );
+            } else if (error.response?.status === 409) {
+                throw new ConflictError(
+                    JSON.stringify(error.response.data.error)
+                );
+            }
             throw new Error(error.message);
         }
         throw new Error("Request failed");
