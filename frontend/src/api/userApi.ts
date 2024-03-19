@@ -5,6 +5,7 @@ import { ConflictError, UnauthorizedError } from "../utils/http_errors";
 export const fetchData = async (
     url: string,
     method: string,
+    user: User | null,
     data?: AxiosRequestConfig
 ) => {
     try {
@@ -12,7 +13,11 @@ export const fetchData = async (
             url: url,
             method: method,
             data: data,
+            headers: {
+                Authorization: "Bearer " + user?.token,
+            },
         });
+
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -31,8 +36,14 @@ export const fetchData = async (
     }
 };
 
-export async function getLoggedInUser(): Promise<User> {
-    const res = await fetchData("http://localhost:5000/api/user", "GET");
+export async function getLoggedInUser(
+    loggedInUser: User | null
+): Promise<User> {
+    const res = await fetchData(
+        "http://localhost:5000/api/user",
+        "GET",
+        loggedInUser
+    );
     return res;
 }
 
@@ -45,6 +56,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<User> {
     const res = await fetchData(
         "http://localhost:5000/api/user/login",
         "POST",
+        null,
         {
             data: credentials,
         }

@@ -21,6 +21,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
             try {
                 setLoading(true);
                 const user = await userApi.loginUser({ username, password });
+                localStorage.setItem("user", JSON.stringify(user));
                 onLoginSuccessful(user);
                 setLoading(false);
             } catch (error) {
