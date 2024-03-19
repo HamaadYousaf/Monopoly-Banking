@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { User } from "../models/user";
 import { ConflictError, UnauthorizedError } from "../utils/http_errors";
 
@@ -61,5 +61,15 @@ export async function loginUser(credentials: LoginCredentials): Promise<User> {
             data: credentials,
         }
     );
+    return res;
+}
+
+export async function logoutUser(): Promise<boolean> {
+    const res = await fetchData(
+        "http://localhost:5000/api/user/logout",
+        "POST",
+        null
+    );
+
     return res;
 }

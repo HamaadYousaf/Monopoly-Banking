@@ -7,13 +7,13 @@ import env from "../util/validateEnv";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
     try {
-        if (!req.token) {
+        if (!req.token || !req.id) {
             throw createHttpError(401, "Not Authenticated");
         }
 
         const user = await prismaInstance.user.findUnique({
             where: {
-                id: req.token,
+                id: req.id,
             },
         });
 
@@ -21,7 +21,14 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
             throw createHttpError(401, "Not Authenticated");
         }
 
-        res.status(200).json(user);
+        res.status(200).json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            roomId: user.roomId,
+            auth: true,
+            token: req.token,
+        });
     } catch (error) {
         next(error);
     }
@@ -67,14 +74,12 @@ export const login: RequestHandler<
         const token = jwt.sign(user.id, env.SECRET_KEY);
 
         res.status(200).send({
-            data: {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                roomId: user.roomId,
-                auth: true,
-                token: token,
-            },
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            roomId: user.roomId,
+            auth: true,
+            token: token,
         });
     } catch (error) {
         next(error);
@@ -134,4 +139,13 @@ export const register: RequestHandler<
     }
 };
 
-export const logout = () => {};
+export const logout: RequestHandler = async (req, res, next) => {
+    try {
+        req.token = "";
+        req.id = "";
+
+        res.status(201).send({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};

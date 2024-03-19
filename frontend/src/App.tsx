@@ -51,9 +51,10 @@ function App() {
                                 setShowRegister(false);
                                 setShowLogin(true);
                             }}
-                            onLogoutSuccessful={() =>
-                                (loggedInUser.current = null)
-                            }
+                            onLogoutSuccessful={() => {
+                                loggedInUser.current = null;
+                                setShowLogin(true);
+                            }}
                             onRegisterClicked={() => {
                                 setShowLogin(false);
                                 setShowRegister(true);

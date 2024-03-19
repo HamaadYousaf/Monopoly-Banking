@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { User } from "../models/user";
 import * as userApi from "../api/userApi";
-import Loading from "./Loading";
+import { User } from "../models/user";
 import { UnauthorizedError } from "../utils/http_errors";
+import Loading from "./Loading";
 
 interface LoginProps {
     onLoginSuccessful: (user: User) => void;
