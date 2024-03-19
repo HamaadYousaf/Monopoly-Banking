@@ -42,14 +42,19 @@ function App() {
                             loggedInUser={loggedInUser}
                             showRegister={showRegister}
                             showLogin={showLogin}
-                            onLoginClicked={() => setShowLogin(true)}
+                            onLoginClicked={() => {
+                                setShowRegister(false);
+                                setShowLogin(true);
+                            }}
                             onLogoutSuccessful={() => setLoggedInUser(null)}
-                            onRegisterClicked={() => setShowRegister(true)}
+                            onRegisterClicked={() => {
+                                setShowLogin(false);
+                                setShowRegister(true);
+                            }}
                         />
                         <div className="md:container md:mx-auto">
                             {showRegister && (
                                 <Register
-                                    onDismiss={() => setShowRegister(false)}
                                     onRegisterSuccessful={(user) => {
                                         setLoggedInUser(user);
                                         setShowRegister(false);
@@ -58,7 +63,6 @@ function App() {
                             )}
                             {showLogin && (
                                 <Login
-                                    onDismiss={() => setShowLogin(false)}
                                     onLoginSuccessful={(user) => {
                                         setLoggedInUser(user);
                                         setShowLogin(false);

@@ -27,6 +27,22 @@ export const fetchData = async (
 };
 
 export async function getLoggedInUser(): Promise<User> {
-    const res = await fetchData("http://localhost:5000/api/users", "GET");
+    const res = await fetchData("http://localhost:5000/api/user", "GET");
+    return res;
+}
+
+export interface LoginCredentials {
+    username: string;
+    password: string;
+}
+
+export async function loginUser(credentials: LoginCredentials): Promise<User> {
+    const res = await fetchData(
+        "http://localhost:5000/api/user/login",
+        "POST",
+        {
+            data: credentials,
+        }
+    );
     return res;
 }

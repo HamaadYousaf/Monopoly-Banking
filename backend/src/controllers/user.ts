@@ -7,6 +7,10 @@ import env from "../util/validateEnv";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
     try {
+        if (!req.token) {
+            throw createHttpError(401, "Not Authenticated");
+        }
+
         const user = await prismaInstance.user.findUnique({
             where: {
                 id: req.token,
@@ -24,8 +28,10 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
 };
 
 interface LoginBody {
-    username: string;
-    password: string;
+    data: {
+        username: string;
+        password: string;
+    };
 }
 
 export const login: RequestHandler<
@@ -34,8 +40,8 @@ export const login: RequestHandler<
     LoginBody,
     unknown
 > = async (req, res, next) => {
-    const username = req.body.username;
-    const password = req.body.password;
+    const username = req.body.data.username;
+    const password = req.body.data.password;
 
     try {
         if (!username || !password) {
