@@ -1,12 +1,10 @@
 import { User } from "../models/user";
 
 interface RegisterProps {
-    onDismiss: () => void;
     onRegisterSuccessful: (user: User) => void;
 }
 
-const Register = ({ onDismiss, onRegisterSuccessful }: RegisterProps) => {
-    console.log(onDismiss);
+const Register = ({ onRegisterSuccessful }: RegisterProps) => {
     console.log(onRegisterSuccessful);
     return <div>Register</div>;
 };
