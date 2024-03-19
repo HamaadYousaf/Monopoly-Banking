@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User } from "../models/user";
 import * as userApi from "../api/userApi";
 import Loading from "./Loading";
+import { UnauthorizedError } from "../utils/http_errors";
 
 interface LoginProps {
     onLoginSuccessful: (user: User) => void;
@@ -11,6 +12,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         event.preventDefault();
@@ -19,9 +21,15 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
             try {
                 setLoading(true);
                 const user = await userApi.loginUser({ username, password });
+                localStorage.setItem("user", JSON.stringify(user));
                 onLoginSuccessful(user);
                 setLoading(false);
             } catch (error) {
+                if (error instanceof UnauthorizedError) {
+                    setError(error.message.replace(/["']/g, ""));
+                } else {
+                    alert(error);
+                }
                 console.error(error);
                 setLoading(false);
             }
@@ -44,6 +52,16 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                             </h2>
                         </div>
                         <div className="mt-10 mb-5 sm:mx-auto sm:w-full sm:max-w-sm">
+                            {error && (
+                                <div
+                                    className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative self-center w-full mb-4"
+                                    role="alert"
+                                >
+                                    <span className="block sm:inline">
+                                        {error}
+                                    </span>
+                                </div>
+                            )}
                             <form
                                 className="space-y-6"
                                 action="#"
@@ -52,7 +70,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                                 <div>
                                     <label
                                         htmlFor="username"
-                                        className="block text-sm font-medium leading-6 text-gray-900"
+                                        className="block text-md font-medium leading-6 text-gray-900"
                                     >
                                         Username
                                     </label>
@@ -63,6 +81,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                                             type="username"
                                             autoComplete="username"
                                             required
+                                            value={username}
                                             onChange={(e) =>
                                                 setUsername(e.target.value)
                                             }
@@ -74,7 +93,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                                     <div className="flex items-center justify-between">
                                         <label
                                             htmlFor="password"
-                                            className="block text-sm font-medium leading-6 text-gray-900"
+                                            className="block text-md font-medium leading-6 text-gray-900"
                                         >
                                             Password
                                         </label>
@@ -86,6 +105,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                                             type="password"
                                             autoComplete="current-password"
                                             required
+                                            value={password}
                                             onChange={(e) =>
                                                 setPassword(e.target.value)
                                             }
@@ -97,7 +117,7 @@ const Login = ({ onLoginSuccessful }: LoginProps) => {
                                     <button
                                         type="submit"
                                         onClick={handleClick}
-                                        className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                        className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-md font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         Sign in
                                     </button>

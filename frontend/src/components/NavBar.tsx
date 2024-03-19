@@ -17,11 +17,6 @@ const NavBar = ({
     onLogoutSuccessful,
     onRegisterClicked,
 }: NavBarProps) => {
-    console.log(loggedInUser);
-    console.log(onLoginClicked);
-    console.log(onLogoutSuccessful);
-    console.log(onRegisterClicked);
-
     return (
         <>
             <div className="navbar bg-white shadow-md">

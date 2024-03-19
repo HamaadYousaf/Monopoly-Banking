@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
-import { User } from "./models/user";
+import { useEffect, useRef, useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import * as userApi from "./api/userApi";
+import Loading from "./components/Loading";
 import Login from "./components/Login";
-import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
 import Register from "./components/Register";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Loading from "./components/Loading";
+import { User } from "./models/user";
+import Home from "./pages/Home";
+
 function App() {
-    const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+    const loggedInUser = useRef<User | null>(
+        JSON.parse(localStorage.getItem("user") || "{}")
+    );
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -17,8 +20,10 @@ function App() {
         async function fetchLoggedInUser() {
             try {
                 setLoading(true);
-                const user = await userApi.getLoggedInUser();
-                setLoggedInUser(user);
+                const user = await userApi.getLoggedInUser(
+                    loggedInUser.current
+                );
+                loggedInUser.current = user;
                 setShowLogin(false);
                 setLoading(false);
             } catch (error) {
@@ -39,14 +44,16 @@ function App() {
                 <>
                     <BrowserRouter>
                         <NavBar
-                            loggedInUser={loggedInUser}
+                            loggedInUser={loggedInUser.current}
                             showRegister={showRegister}
                             showLogin={showLogin}
                             onLoginClicked={() => {
                                 setShowRegister(false);
                                 setShowLogin(true);
                             }}
-                            onLogoutSuccessful={() => setLoggedInUser(null)}
+                            onLogoutSuccessful={() =>
+                                (loggedInUser.current = null)
+                            }
                             onRegisterClicked={() => {
                                 setShowLogin(false);
                                 setShowRegister(true);
@@ -56,7 +63,7 @@ function App() {
                             {showRegister && (
                                 <Register
                                     onRegisterSuccessful={(user) => {
-                                        setLoggedInUser(user);
+                                        loggedInUser.current = user;
                                         setShowRegister(false);
                                     }}
                                 />
@@ -64,7 +71,7 @@ function App() {
                             {showLogin && (
                                 <Login
                                     onLoginSuccessful={(user) => {
-                                        setLoggedInUser(user);
+                                        loggedInUser.current = user;
                                         setShowLogin(false);
                                     }}
                                 />
@@ -74,7 +81,11 @@ function App() {
                                     <Route
                                         path="/"
                                         element={
-                                            <Home loggedInUser={loggedInUser} />
+                                            <Home
+                                                loggedInUser={
+                                                    loggedInUser.current
+                                                }
+                                            />
                                         }
                                     />
                                 </Routes>

@@ -1,5 +1,8 @@
 export interface User {
-    username: string;
+    auth: boolean;
     email: string;
+    id: string;
     roomId: string;
+    token: string;
+    username: string;
 }

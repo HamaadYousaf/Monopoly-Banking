@@ -5,7 +5,6 @@ interface HomeProps {
 }
 
 const Home = ({ loggedInUser }: HomeProps) => {
-    console.log(loggedInUser);
     return <div>Home</div>;
 };
 
