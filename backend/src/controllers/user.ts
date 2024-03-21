@@ -26,7 +26,6 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
             username: user.username,
             email: user.email,
             roomId: user.roomId,
-            auth: true,
             token: req.token,
         });
     } catch (error) {
@@ -78,7 +77,6 @@ export const login: RequestHandler<
             username: user.username,
             email: user.email,
             roomId: user.roomId,
-            auth: true,
             token: token,
         });
     } catch (error) {
@@ -87,9 +85,11 @@ export const login: RequestHandler<
 };
 
 interface RegisterBody {
-    username: string;
-    email: string;
-    password: string;
+    data: {
+        username: string;
+        email: string;
+        password: string;
+    };
 }
 
 export const register: RequestHandler<
@@ -98,11 +98,14 @@ export const register: RequestHandler<
     RegisterBody,
     unknown
 > = async (req, res, next) => {
-    const username = req.body.username;
-    const email = req.body.email;
-    const passwordRaw = req.body.password;
+    const username = req.body.data.username;
+    const email = req.body.data.email;
+    const passwordRaw = req.body.data.password;
 
     try {
+        console.log(username);
+        console.log(passwordRaw);
+        console.log(email);
         if (!username || !email || !passwordRaw) {
             throw createHttpError(400, "Missing parameters");
         }
@@ -133,7 +136,15 @@ export const register: RequestHandler<
             },
         });
 
-        res.status(201).send({ data: user });
+        const token = jwt.sign(user.id, env.SECRET_KEY);
+
+        res.status(201).send({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            roomId: user.roomId,
+            token: token,
+        });
     } catch (error) {
         next(error);
     }

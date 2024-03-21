@@ -1,6 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { User } from "../models/user";
-import { ConflictError, UnauthorizedError } from "../utils/http_errors";
+import {
+    BadRequestError,
+    ConflictError,
+    UnauthorizedError,
+} from "../utils/http_errors";
 
 export const fetchData = async (
     url: string,
@@ -29,6 +33,10 @@ export const fetchData = async (
                 throw new ConflictError(
                     JSON.stringify(error.response.data.error)
                 );
+            } else if (error.response?.status === 400) {
+                throw new BadRequestError(
+                    JSON.stringify(error.response.data.error)
+                );
             }
             throw new Error(error.message);
         }
@@ -55,6 +63,26 @@ export interface LoginCredentials {
 export async function loginUser(credentials: LoginCredentials): Promise<User> {
     const res = await fetchData(
         "http://localhost:5000/api/user/login",
+        "POST",
+        null,
+        {
+            data: credentials,
+        }
+    );
+    return res;
+}
+
+export interface RegisterCredentials {
+    username: string;
+    email: string;
+    password: string;
+}
+
+export async function registerUser(
+    credentials: RegisterCredentials
+): Promise<User> {
+    const res = await fetchData(
+        "http://localhost:5000/api/user/register",
         "POST",
         null,
         {

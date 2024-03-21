@@ -35,13 +35,13 @@ const NavBar = ({
                     {loggedInUser ? (
                         <>
                             <a
-                                className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-2"
+                                className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-2 md:pr-4 pr-2"
                                 href="/"
                             >
                                 Monopoly Banking
                             </a>
                             {loggedInUser && (
-                                <p className="text-base border-l-2 border-[#444444] pl-4">
+                                <p className="text-base border-l-2 border-[#444444] md:pl-4 pl-2">
                                     {loggedInUser.username}
                                 </p>
                             )}
