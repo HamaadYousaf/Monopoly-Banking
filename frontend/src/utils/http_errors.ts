@@ -8,3 +8,5 @@ class HttpError extends Error {
 export class UnauthorizedError extends HttpError {}
 
 export class ConflictError extends HttpError {}
+
+export class BadRequestError extends HttpError {}
