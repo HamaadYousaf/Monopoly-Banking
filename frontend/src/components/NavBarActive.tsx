@@ -1,12 +1,13 @@
 import { User } from "../models/user";
 import * as userApi from "../api/userApi";
 import { useNavigate } from "react-router-dom";
+
 interface NavBarActiveProps {
     loggedInUser: User | null;
+    setView: (view: string) => void;
 }
 
-// eslint-disable-next-line no-empty-pattern
-const NavBarActive = ({}: NavBarActiveProps) => {
+const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -51,25 +52,34 @@ const NavBarActive = ({}: NavBarActiveProps) => {
                             <li>
                                 <button
                                     className="border-b-2 py-2 focus:bg-gray-300 rounded-none rounded-t-xl"
-                                    onClick={() => console.log("click")}
+                                    onClick={() => setView("home")}
                                 >
                                     Home
                                 </button>
                             </li>
                             <li>
-                                <button className="border-b-2 py-2 focus:bg-gray-300 rounded-none">
+                                <button
+                                    className="border-b-2 py-2 focus:bg-gray-300 rounded-none"
+                                    onClick={() => setView("bank")}
+                                >
                                     Bank
                                 </button>
                             </li>
                             <li>
-                                <button className="border-b-2 py-2 focus:bg-gray-300 rounded-none rounded-b-xl ">
+                                <button
+                                    className="border-b-2 py-2 focus:bg-gray-300 rounded-none rounded-b-xl"
+                                    onClick={() => setView("history")}
+                                >
                                     History
                                 </button>
                             </li>
                         </ul>
                     </div>
-                    <p className="font-medium md:text-xl text-base sm:text-lg md:pl-4 pl-0">
-                        Monopoly Banking
+                    <p className="font-medium md:text-xl text-base sm:text-lg md:pl-4 pl-1 md:pr-4 pr-2">
+                        Monopoly
+                    </p>
+                    <p className="text-base border-l-2 border-[#444444] md:pl-4 pl-2">
+                        {loggedInUser?.username}
                     </p>
                 </div>
                 <div className="navbar-center hidden md:flex">
@@ -77,16 +87,24 @@ const NavBarActive = ({}: NavBarActiveProps) => {
                         <li>
                             <button
                                 className="hover:bg-gray-300"
-                                onClick={() => console.log("click")}
+                                onClick={() => setView("home")}
                             >
                                 Home
                             </button>
                         </li>
                         <li>
-                            <button className="hover:bg-gray-300">Bank</button>
+                            <button
+                                className="hover:bg-gray-300"
+                                onClick={() => setView("bank")}
+                            >
+                                Bank
+                            </button>
                         </li>
                         <li>
-                            <button className="hover:bg-gray-300">
+                            <button
+                                className="hover:bg-gray-300"
+                                onClick={() => setView("history")}
+                            >
                                 History
                             </button>
                         </li>

@@ -7,6 +7,8 @@ import { User } from "../models/user";
 
 const Room = () => {
     const [loading, setLoading] = useState(true);
+    const [view, setView] = useState("home");
+
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
     );
@@ -43,8 +45,13 @@ const Room = () => {
                 </>
             ) : (
                 <>
-                    <NavBarActive loggedInUser={loggedInUser.current} />
-                    Room
+                    <NavBarActive
+                        loggedInUser={loggedInUser.current}
+                        setView={setView}
+                    />
+                    {view === "home" && <h1>Home</h1>}
+                    {view === "bank" && <h1>Bank</h1>}
+                    {view === "history" && <h1>History</h1>}
                 </>
             )}
         </>
