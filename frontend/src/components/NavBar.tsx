@@ -1,28 +1,20 @@
-import { User } from "../models/user";
+import { useNavigate } from "react-router-dom";
 import * as userApi from "../api/userApi";
+import { User } from "../models/user";
 
 interface NavBarProps {
     loggedInUser: User | null;
-    showRegister: boolean;
-    showLogin: boolean;
-    onLoginClicked: () => void;
-    onLogoutSuccessful: () => void;
-    onRegisterClicked: () => void;
+    state: "login" | "register" | "home";
 }
 
-const NavBar = ({
-    loggedInUser,
-    showRegister,
-    showLogin,
-    onLoginClicked,
-    onLogoutSuccessful,
-    onRegisterClicked,
-}: NavBarProps) => {
+const NavBar = ({ loggedInUser, state }: NavBarProps) => {
+    const navigate = useNavigate();
+
     const handleLogout = async () => {
         try {
             await userApi.logoutUser();
             localStorage.clear();
-            onLogoutSuccessful();
+            navigate("/login");
         } catch (error) {
             console.error(error);
         }
@@ -32,14 +24,11 @@ const NavBar = ({
         <>
             <div className="navbar bg-white shadow-md">
                 <div className="navbar-start">
-                    {loggedInUser ? (
+                    {loggedInUser?.username ? (
                         <>
-                            <a
-                                className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-2 md:pr-4 pr-2"
-                                href="/"
-                            >
+                            <p className="font-medium md:text-xl text-base sm:text-lg md:pl-4 pl-2 md:pr-4 pr-2">
                                 Monopoly Banking
-                            </a>
+                            </p>
                             {loggedInUser && (
                                 <p className="text-base border-l-2 border-[#444444] md:pl-4 pl-2">
                                     {loggedInUser.username}
@@ -48,39 +37,41 @@ const NavBar = ({
                         </>
                     ) : (
                         <>
-                            <a className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-2">
+                            <p className="md:text-xl text-base font-medium sm:text-lg md:pl-4 pl-2">
                                 Monopoly Banking
-                            </a>
+                            </p>
                         </>
                     )}
                 </div>
                 <div className="navbar-end">
-                    {showRegister && (
+                    {state === "register" && (
                         <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
-                            onClick={onLoginClicked}
+                            onClick={() => navigate("/login")}
                         >
                             Login
                         </button>
                     )}
-                    {showLogin && (
+                    {state === "login" && (
                         <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 md:mr-4 text-sm md:text-base"
-                            onClick={onRegisterClicked}
+                            onClick={() => navigate("/register")}
                         >
                             Create Account
                         </button>
                     )}
-                    {!showLogin && !showRegister && loggedInUser && (
-                        <>
-                            <button
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 md:mr-4 text-sm md:text-base"
-                                onClick={handleLogout}
-                            >
-                                Sign Out
-                            </button>
-                        </>
-                    )}
+                    {state !== "login" &&
+                        state !== "register" &&
+                        loggedInUser && (
+                            <>
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 md:mr-4 text-sm md:text-base"
+                                    onClick={handleLogout}
+                                >
+                                    Sign Out
+                                </button>
+                            </>
+                        )}
                 </div>
             </div>
         </>
