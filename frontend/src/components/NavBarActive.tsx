@@ -1,26 +1,23 @@
 import { User } from "../models/user";
-
-interface NavBarProps {
+import * as userApi from "../api/userApi";
+import { useNavigate } from "react-router-dom";
+interface NavBarActiveProps {
     loggedInUser: User | null;
-    showRegister: boolean;
-    showLogin: boolean;
-    onLoginClicked: () => void;
-    onLogoutSuccessful: () => void;
-    onRegisterClicked: () => void;
 }
 
-const NavBar = ({
-    loggedInUser,
-    showRegister,
-    showLogin,
-    onLoginClicked,
-    onLogoutSuccessful,
-    onRegisterClicked,
-}: NavBarProps) => {
-    console.log(loggedInUser);
-    console.log(onLoginClicked);
-    console.log(onLogoutSuccessful);
-    console.log(onRegisterClicked);
+// eslint-disable-next-line no-empty-pattern
+const NavBarActive = ({}: NavBarActiveProps) => {
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await userApi.logoutUser();
+            localStorage.clear();
+            navigate("/login");
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <>
@@ -71,9 +68,9 @@ const NavBar = ({
                             </li>
                         </ul>
                     </div>
-                    <a className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-0">
+                    <p className="font-medium md:text-xl text-base sm:text-lg md:pl-4 pl-0">
                         Monopoly Banking
-                    </a>
+                    </p>
                 </div>
                 <div className="navbar-center hidden md:flex">
                     <ul className="menu menu-horizontal px-1">
@@ -96,26 +93,16 @@ const NavBar = ({
                     </ul>
                 </div>
                 <div className="navbar-end">
-                    {showRegister && (
-                        <button
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
-                            onClick={onLoginClicked}
-                        >
-                            Login
-                        </button>
-                    )}
-                    {showLogin && (
-                        <button
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 md:mr-4 text-sm md:text-base"
-                            onClick={onRegisterClicked}
-                        >
-                            Create Account
-                        </button>
-                    )}
+                    <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
+                        onClick={handleLogout}
+                    >
+                        Leave Room
+                    </button>
                 </div>
             </div>
         </>
     );
 };
 
-export default NavBar;
+export default NavBarActive;

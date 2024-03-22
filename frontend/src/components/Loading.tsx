@@ -3,9 +3,9 @@ const Loading = () => {
         <>
             <div className="navbar bg-white shadow-md">
                 <div className="navbar-start">
-                    <a className="btn btn-ghost md:text-xl text-base sm:text-lg md:pl-4 pl-2">
+                    <p className="font-medium md:text-xl text-base sm:text-lg md:pl-4 pl-2">
                         Monopoly Banking
-                    </a>
+                    </p>
                 </div>
                 <div className="navbar-end">
                     <div className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 md:mr-4 text-sm md:text-base w-24 text-center">
