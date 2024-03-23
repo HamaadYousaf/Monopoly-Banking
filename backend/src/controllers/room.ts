@@ -76,8 +76,8 @@ export const createRoom: RequestHandler = async (req, res, next) => {
 };
 
 export const joinRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
-    const roomId = req.body.roomId;
+    const userId = req.id;
+    const roomId = req.body.data.roomId;
 
     try {
         asserIsDefined(userId);
@@ -99,7 +99,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
         });
 
         if (!room) {
-            throw createHttpError(40, "Cannot find room");
+            throw createHttpError(400, "Cannot find room");
         }
         if (isUserInRoom?.roomId) {
             throw createHttpError(409, "User is already in a room");
@@ -114,7 +114,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const userBank = await prismaInstance.bank.create({
+        await prismaInstance.bank.create({
             data: {
                 userId: userId,
                 roomId: roomId,
@@ -122,19 +122,24 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        res.status(201).send({ data: { user: userJoined, balance: userBank } });
+        res.status(201).send({
+            id: userJoined.id,
+            username: userJoined.username,
+            email: userJoined.email,
+            roomId: userJoined.roomId,
+            token: req.token,
+        });
     } catch (error) {
         next(error);
     }
 };
 
 export const leaveRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
-    const roomId = req.body.roomId;
+    const userId = req.id;
+    const roomId = req.body.data.roomId;
 
     try {
         asserIsDefined(userId);
-
         if (!roomId) {
             throw createHttpError(400, "Missing parameters");
         }
@@ -149,7 +154,7 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(409, "User is not in room");
         }
 
-        const userJoined = await prismaInstance.user.update({
+        const userLeave = await prismaInstance.user.update({
             where: {
                 id: userId,
             },
@@ -173,7 +178,7 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${user.username} left the room`,
                 time: moment().format("h:mm a"),
@@ -201,7 +206,13 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             });
         }
 
-        res.status(201).send({ data: { user: userJoined, log: log } });
+        res.status(201).send({
+            id: userLeave.id,
+            username: userLeave.username,
+            email: userLeave.email,
+            roomId: userLeave.roomId,
+            token: req.token,
+        });
     } catch (error) {
         next(error);
     }

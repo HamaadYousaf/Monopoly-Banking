@@ -10,11 +10,16 @@ interface NavBarActiveProps {
 const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
+    const handleLeave = async () => {
         try {
-            await userApi.logoutUser();
-            localStorage.clear();
-            navigate("/login");
+            if (loggedInUser?.roomId) {
+                const user = await userApi.leaveRoom(
+                    loggedInUser,
+                    loggedInUser?.roomId
+                );
+                localStorage.setItem("user", JSON.stringify(user));
+                navigate("/");
+            }
         } catch (error) {
             console.error(error);
         }
@@ -113,7 +118,7 @@ const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
                 <div className="navbar-end">
                     <button
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
-                        onClick={handleLogout}
+                        onClick={handleLeave}
                     >
                         Leave Room
                     </button>
