@@ -5,7 +5,7 @@ import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
 
 export const createRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
+    const userId = req.id;
 
     try {
         asserIsDefined(userId);
@@ -24,13 +24,34 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(409, "User is already in a room");
         }
 
+        let id = [...Array(6)]
+            .map(() => Math.floor(Math.random() * 16).toString(16))
+            .join("")
+            .toUpperCase();
+
+        let existingRoom = await prismaInstance.room.findFirst({
+            where: { id: id },
+        });
+
+        while (existingRoom) {
+            id = [...Array(6)]
+                .map(() => Math.floor(Math.random() * 16).toString(16))
+                .join("")
+                .toUpperCase();
+
+            existingRoom = await prismaInstance.room.findFirst({
+                where: { id: id },
+            });
+        }
+
         const room = await prismaInstance.room.create({
             data: {
+                id: id,
                 banker: user.username,
             },
         });
 
-        await prismaInstance.user.update({
+        const userJoined = await prismaInstance.user.update({
             where: {
                 id: userId,
             },
@@ -39,7 +60,7 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const userBank = await prismaInstance.bank.create({
+        await prismaInstance.bank.create({
             data: {
                 userId: userId,
                 roomId: room.id,
@@ -47,14 +68,14 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const freeParking = await prismaInstance.freeParking.create({
+        await prismaInstance.freeParking.create({
             data: {
                 roomId: room.id,
                 balance: 0,
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${user.username} joined the room`,
                 time: moment().format("h:mm a"),
@@ -63,12 +84,11 @@ export const createRoom: RequestHandler = async (req, res, next) => {
         });
 
         res.status(201).send({
-            data: {
-                room: room,
-                bank: userBank,
-                freeParking: freeParking,
-                log: log,
-            },
+            id: userJoined.id,
+            username: userJoined.username,
+            email: userJoined.email,
+            roomId: userJoined.roomId,
+            token: req.token,
         });
     } catch (error) {
         next(error);
@@ -76,8 +96,8 @@ export const createRoom: RequestHandler = async (req, res, next) => {
 };
 
 export const joinRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
-    const roomId = req.body.roomId;
+    const userId = req.id;
+    const roomId = req.body.data.roomId;
 
     try {
         asserIsDefined(userId);
@@ -99,7 +119,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
         });
 
         if (!room) {
-            throw createHttpError(40, "Cannot find room");
+            throw createHttpError(400, "Room does not exist");
         }
         if (isUserInRoom?.roomId) {
             throw createHttpError(409, "User is already in a room");
@@ -114,7 +134,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const userBank = await prismaInstance.bank.create({
+        await prismaInstance.bank.create({
             data: {
                 userId: userId,
                 roomId: roomId,
@@ -122,19 +142,24 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        res.status(201).send({ data: { user: userJoined, balance: userBank } });
+        res.status(201).send({
+            id: userJoined.id,
+            username: userJoined.username,
+            email: userJoined.email,
+            roomId: userJoined.roomId,
+            token: req.token,
+        });
     } catch (error) {
         next(error);
     }
 };
 
 export const leaveRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
-    const roomId = req.body.roomId;
+    const userId = req.id;
+    const roomId = req.body.data.roomId;
 
     try {
         asserIsDefined(userId);
-
         if (!roomId) {
             throw createHttpError(400, "Missing parameters");
         }
@@ -149,7 +174,7 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(409, "User is not in room");
         }
 
-        const userJoined = await prismaInstance.user.update({
+        const userLeave = await prismaInstance.user.update({
             where: {
                 id: userId,
             },
@@ -173,7 +198,7 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${user.username} left the room`,
                 time: moment().format("h:mm a"),
@@ -201,7 +226,13 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
             });
         }
 
-        res.status(201).send({ data: { user: userJoined, log: log } });
+        res.status(201).send({
+            id: userLeave.id,
+            username: userLeave.username,
+            email: userLeave.email,
+            roomId: userLeave.roomId,
+            token: req.token,
+        });
     } catch (error) {
         next(error);
     }
@@ -235,8 +266,10 @@ export const getRoom: RequestHandler = async (req, res, next) => {
                 id: roomId,
             },
             include: {
-                users: true,
-                FreeParking: true,
+                users: {
+                    include: { Bank: true },
+                },
+                FreeParking: { select: { balance: true } },
             },
         });
 
@@ -244,7 +277,7 @@ export const getRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(404, "Room not found");
         }
 
-        res.status(200).send({ data: room });
+        res.status(200).send(room);
     } catch (error) {
         next(error);
     }

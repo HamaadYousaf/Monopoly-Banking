@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { User } from "../models/user";
 import { useNavigate } from "react-router-dom";
+import * as roomApi from "../api/roomApi";
 import * as userApi from "../api/userApi";
-import NavBar from "../components/NavBar";
 import Loading from "../components/Loading";
+import NavBar from "../components/NavBar";
+import { User } from "../models/user";
 
 const Home = () => {
+    const [roomId, setRoomId] = useState("");
     const [loading, setLoading] = useState(true);
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
@@ -33,6 +35,40 @@ const Home = () => {
         fetchLoggedInUser();
     }, [navigate]);
 
+    const handleJoin = async (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        try {
+            setLoading(true);
+            const user = await roomApi.joinRoom(loggedInUser.current, roomId);
+            localStorage.setItem("user", JSON.stringify(user));
+            if (user.roomId) {
+                navigate("/room");
+            }
+            setLoading(false);
+        } catch (error) {
+            navigate("/login");
+            setLoading(false);
+            console.error(error);
+        }
+    };
+
+    const handleCreate = async (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        try {
+            setLoading(true);
+            const user = await roomApi.createRoom(loggedInUser.current);
+            localStorage.setItem("user", JSON.stringify(user));
+            if (user.roomId) {
+                navigate("/room");
+            }
+            setLoading(false);
+        } catch (error) {
+            navigate("/login");
+            setLoading(false);
+            console.error(error);
+        }
+    };
+
     return (
         <>
             {loading ? (
@@ -49,10 +85,12 @@ const Home = () => {
                                 type="text"
                                 placeholder="Room ID"
                                 className="input w-full max-w-xs bg-white mb-4 border-solid border-2 border-[#333333] focus:outline-none"
+                                onChange={(e) => setRoomId(e.target.value)}
                             />
                             <button
                                 type="submit"
                                 className="flex justify-center rounded-md pb-1 bg-blue-500 text-[1.5rem] px-5 font-semibold  text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-auto mb-2"
+                                onClick={handleJoin}
                             >
                                 Join
                             </button>
@@ -60,6 +98,7 @@ const Home = () => {
                             <button
                                 type="submit"
                                 className="flex justify-center pb-1 rounded-md bg-blue-500 text-[1.5rem] px-5 text-center font-semibold  text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-auto mb-4"
+                                onClick={handleCreate}
                             >
                                 Create Room
                             </button>

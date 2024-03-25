@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { Room } from "../models/room";
 import { User } from "../models/user";
 import {
     BadRequestError,
@@ -44,59 +45,49 @@ const fetchData = async (
     }
 };
 
-export async function getLoggedInUser(
-    loggedInUser: User | null
-): Promise<User> {
+export async function getRoom(loggedInUser: User | null): Promise<Room> {
     const res = await fetchData(
-        "http://localhost:5000/api/user",
+        `http://localhost:5000/api/room/${loggedInUser?.roomId}`,
         "GET",
         loggedInUser
     );
+
     return res;
 }
 
-export interface LoginCredentials {
-    username: string;
-    password: string;
-}
-
-export async function loginUser(credentials: LoginCredentials): Promise<User> {
+export async function createRoom(loggedInUser: User | null): Promise<User> {
     const res = await fetchData(
-        "http://localhost:5000/api/user/login",
+        `http://localhost:5000/api/room/create`,
         "POST",
-        null,
-        {
-            data: credentials,
-        }
+        loggedInUser
     );
+
     return res;
 }
 
-export interface RegisterCredentials {
-    username: string;
-    email: string;
-    password: string;
-}
-
-export async function registerUser(
-    credentials: RegisterCredentials
+export async function joinRoom(
+    loggedInUser: User | null,
+    roomId: string
 ): Promise<User> {
     const res = await fetchData(
-        "http://localhost:5000/api/user/register",
+        "http://localhost:5000/api/room/join",
         "POST",
-        null,
-        {
-            data: credentials,
-        }
+        loggedInUser,
+        { data: { roomId: roomId } }
     );
+
     return res;
 }
 
-export async function logoutUser(): Promise<User> {
+export async function leaveRoom(
+    loggedInUser: User | null,
+    roomId: string
+): Promise<boolean> {
     const res = await fetchData(
-        "http://localhost:5000/api/user/logout",
+        "http://localhost:5000/api/room/leave",
         "POST",
-        null
+        loggedInUser,
+        { data: { roomId: roomId } }
     );
 
     return res;

@@ -7,7 +7,7 @@ import Room from "./pages/Room";
 
 function App() {
     return (
-        <div className="bg-bg-blue">
+        <div>
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<Home />} />
