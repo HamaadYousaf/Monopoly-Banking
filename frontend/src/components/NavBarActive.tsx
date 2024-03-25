@@ -5,9 +5,10 @@ import { User } from "../models/user";
 interface NavBarActiveProps {
     loggedInUser: User | null;
     setView: (view: string) => void;
+    banker: boolean;
 }
 
-const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
+const NavBarActive = ({ loggedInUser, setView, banker }: NavBarActiveProps) => {
     const navigate = useNavigate();
 
     const handleLeave = async () => {
@@ -62,14 +63,17 @@ const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
                                     Home
                                 </button>
                             </li>
-                            <li>
-                                <button
-                                    className="border-b-2 py-2 focus:bg-gray-300 rounded-none"
-                                    onClick={() => setView("bank")}
-                                >
-                                    Bank
-                                </button>
-                            </li>
+                            {banker && (
+                                <li>
+                                    <button
+                                        className="border-b-2 py-2 focus:bg-gray-300 rounded-none"
+                                        onClick={() => setView("bank")}
+                                    >
+                                        Bank
+                                    </button>
+                                </li>
+                            )}
+
                             <li>
                                 <button
                                     className="border-b-2 py-2 focus:bg-gray-300 rounded-none rounded-b-xl"
@@ -97,14 +101,17 @@ const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
                                 Home
                             </button>
                         </li>
-                        <li>
-                            <button
-                                className="hover:bg-gray-300"
-                                onClick={() => setView("bank")}
-                            >
-                                Bank
-                            </button>
-                        </li>
+                        {banker && (
+                            <li>
+                                <button
+                                    className="hover:bg-gray-300"
+                                    onClick={() => setView("bank")}
+                                >
+                                    Bank
+                                </button>
+                            </li>
+                        )}
+
                         <li>
                             <button
                                 className="hover:bg-gray-300"

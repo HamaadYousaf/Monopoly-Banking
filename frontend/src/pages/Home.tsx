@@ -5,10 +5,13 @@ import * as userApi from "../api/userApi";
 import Loading from "../components/Loading";
 import NavBar from "../components/NavBar";
 import { User } from "../models/user";
+import { BadRequestError, ConflictError } from "../utils/http_errors";
 
 const Home = () => {
     const [roomId, setRoomId] = useState("");
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
     );
@@ -46,7 +49,15 @@ const Home = () => {
             }
             setLoading(false);
         } catch (error) {
-            navigate("/login");
+            if (
+                error instanceof ConflictError ||
+                error instanceof BadRequestError
+            ) {
+                setError(error.message.replace(/["']/g, ""));
+            } else {
+                alert(error);
+            }
+            setRoomId("");
             setLoading(false);
             console.error(error);
         }
@@ -63,7 +74,6 @@ const Home = () => {
             }
             setLoading(false);
         } catch (error) {
-            navigate("/login");
             setLoading(false);
             console.error(error);
         }
@@ -81,6 +91,11 @@ const Home = () => {
                     <div className="flex justify-center mt-20 font-bold text-4xl text-font">
                         <div className="text-center">
                             <p className="pb-4">Join Room</p>
+                            {error && (
+                                <p className="text-base text-red-500 text-left ">
+                                    *{error}
+                                </p>
+                            )}
                             <input
                                 type="text"
                                 placeholder="Room ID"

@@ -14,6 +14,7 @@ const RoomView = () => {
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState("home");
     const [room, setRoom] = useState<Room | null>(null);
+    const [banker, setBanker] = useState(false);
 
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
@@ -28,11 +29,17 @@ const RoomView = () => {
                     loggedInUser.current
                 );
                 loggedInUser.current = user;
+
                 if (!user.roomId) {
                     navigate("/");
                 }
+
                 const fetchRoom = await roomApi.getRoom(loggedInUser.current);
                 setRoom(fetchRoom);
+
+                if (fetchRoom.banker === loggedInUser.current.username) {
+                    setBanker(true);
+                }
                 setLoading(false);
             } catch (error) {
                 navigate("/login");
@@ -54,13 +61,14 @@ const RoomView = () => {
                     <NavBarActive
                         loggedInUser={loggedInUser.current}
                         setView={setView}
+                        banker={banker}
                     />
-                    <div className="flex justify-center mt-14 font-bold text-4xl text-font">
+                    <div className="flex justify-center md:mt-14 mt-8 font-bold md:text-4xl text-2xl text-font">
                         <div className="text-center">
-                            <p className="pb-0 text-[1.5rem]">
+                            <p className="md:text-[1.5rem] text-[1.4rem]">
                                 Room ID: {room?.id}
                             </p>
-                            <p className=" text-[1.5rem]">
+                            <p className="md:text-[1.5rem] text-[1.4rem]">
                                 Banker: {room?.banker}
                             </p>
                             {view === "home" && <GameHome />}

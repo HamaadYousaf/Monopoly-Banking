@@ -103,7 +103,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
         asserIsDefined(userId);
 
         if (!roomId) {
-            throw createHttpError(400, "Missing parameters");
+            throw createHttpError(400, "Missing Room ID");
         }
 
         const isUserInRoom = await prismaInstance.user.findUnique({
@@ -278,6 +278,67 @@ export const getRoom: RequestHandler = async (req, res, next) => {
         }
 
         res.status(200).send(room);
+    } catch (error) {
+        next(error);
+    }
+};
+
+interface SetBankerBody {
+    data: {
+        username: string;
+        roomId: string;
+    };
+}
+
+export const setBanker: RequestHandler<
+    unknown,
+    unknown,
+    SetBankerBody,
+    unknown
+> = async (req, res, next) => {
+    const userId = req.id;
+    const username = req.body.data.username;
+    const roomId = req.body.data.roomId;
+
+    try {
+        asserIsDefined(userId);
+
+        if (!username || !roomId) {
+            throw createHttpError(400, "Missing parameters");
+        }
+
+        const oldBanker = await prismaInstance.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        const newBanker = await prismaInstance.user.findUnique({
+            where: {
+                username: username,
+            },
+        });
+
+        const room = await prismaInstance.room.findFirst({
+            where: {
+                id: roomId,
+            },
+        });
+
+        if (!room) {
+            throw createHttpError(400, "Room does not exist");
+        }
+
+        if (oldBanker?.roomId !== roomId || newBanker?.roomId !== roomId) {
+            throw createHttpError(409, "User is not in the room");
+        }
+
+        const newRoom = await prismaInstance.room.update({
+            where: { id: roomId },
+            data: { banker: newBanker.username },
+        });
+
+        res.status(201).send(newRoom);
     } catch (error) {
         next(error);
     }
