@@ -1,6 +1,6 @@
-import { User } from "../models/user";
-import * as roomApi from "../api/roomApi";
 import { useNavigate } from "react-router-dom";
+import * as roomApi from "../api/roomApi";
+import { User } from "../models/user";
 
 interface NavBarActiveProps {
     loggedInUser: User | null;

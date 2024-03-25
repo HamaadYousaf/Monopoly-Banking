@@ -1,11 +1,11 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { Room } from "../models/room";
 import { User } from "../models/user";
 import {
     BadRequestError,
     ConflictError,
     UnauthorizedError,
 } from "../utils/http_errors";
-import { Room } from "../models/room";
 
 const fetchData = async (
     url: string,

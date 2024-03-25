@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { User } from "../models/user";
 import { useNavigate } from "react-router-dom";
-import * as userApi from "../api/userApi";
 import * as roomApi from "../api/roomApi";
-import NavBar from "../components/NavBar";
+import * as userApi from "../api/userApi";
 import Loading from "../components/Loading";
+import NavBar from "../components/NavBar";
+import { User } from "../models/user";
 
 const Home = () => {
     const [roomId, setRoomId] = useState("");

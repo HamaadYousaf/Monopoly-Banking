@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import * as userApi from "../api/userApi";
 import * as roomApi from "../api/roomApi";
+import * as userApi from "../api/userApi";
+import Bank from "../components/Bank";
+import GameHome from "../components/GameHome";
+import History from "../components/History";
 import Loading from "../components/Loading";
 import NavBarActive from "../components/NavBarActive";
-import { User } from "../models/user";
 import { Room } from "../models/room";
-import GameHome from "../components/GameHome";
-import Bank from "../components/Bank";
-import History from "../components/History";
+import { User } from "../models/user";
 
 const RoomView = () => {
     const [loading, setLoading] = useState(true);

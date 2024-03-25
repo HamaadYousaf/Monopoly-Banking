@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import moment from "moment";
@@ -35,7 +34,11 @@ export const createRoom: RequestHandler = async (req, res, next) => {
         });
 
         while (existingRoom) {
-            id = crypto.randomBytes(6).toString("hex");
+            id = [...Array(6)]
+                .map(() => Math.floor(Math.random() * 16).toString(16))
+                .join("")
+                .toUpperCase();
+
             existingRoom = await prismaInstance.room.findFirst({
                 where: { id: id },
             });
