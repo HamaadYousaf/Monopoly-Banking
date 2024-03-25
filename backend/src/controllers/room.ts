@@ -246,8 +246,10 @@ export const getRoom: RequestHandler = async (req, res, next) => {
                 id: roomId,
             },
             include: {
-                users: true,
-                FreeParking: true,
+                users: {
+                    include: { Bank: true },
+                },
+                FreeParking: { select: { balance: true } },
             },
         });
 
@@ -255,7 +257,7 @@ export const getRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(404, "Room not found");
         }
 
-        res.status(200).send({ data: room });
+        res.status(200).send({ room });
     } catch (error) {
         next(error);
     }

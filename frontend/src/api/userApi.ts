@@ -6,7 +6,7 @@ import {
     UnauthorizedError,
 } from "../utils/http_errors";
 
-export const fetchData = async (
+const fetchData = async (
     url: string,
     method: string,
     user: User | null,
@@ -115,6 +115,7 @@ export async function joinRoom(
 
     return res;
 }
+
 export async function leaveRoom(
     loggedInUser: User | null,
     roomId: string
