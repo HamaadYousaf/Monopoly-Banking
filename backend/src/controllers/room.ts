@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import moment from "moment";
@@ -5,7 +6,7 @@ import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
 
 export const createRoom: RequestHandler = async (req, res, next) => {
-    const userId = req.token;
+    const userId = req.id;
 
     try {
         asserIsDefined(userId);
@@ -24,13 +25,30 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(409, "User is already in a room");
         }
 
+        let id = [...Array(6)]
+            .map(() => Math.floor(Math.random() * 16).toString(16))
+            .join("")
+            .toUpperCase();
+
+        let existingRoom = await prismaInstance.room.findFirst({
+            where: { id: id },
+        });
+
+        while (existingRoom) {
+            id = crypto.randomBytes(6).toString("hex");
+            existingRoom = await prismaInstance.room.findFirst({
+                where: { id: id },
+            });
+        }
+
         const room = await prismaInstance.room.create({
             data: {
+                id: id,
                 banker: user.username,
             },
         });
 
-        await prismaInstance.user.update({
+        const userJoined = await prismaInstance.user.update({
             where: {
                 id: userId,
             },
@@ -39,7 +57,7 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const userBank = await prismaInstance.bank.create({
+        await prismaInstance.bank.create({
             data: {
                 userId: userId,
                 roomId: room.id,
@@ -47,14 +65,14 @@ export const createRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
-        const freeParking = await prismaInstance.freeParking.create({
+        await prismaInstance.freeParking.create({
             data: {
                 roomId: room.id,
                 balance: 0,
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${user.username} joined the room`,
                 time: moment().format("h:mm a"),
@@ -63,12 +81,11 @@ export const createRoom: RequestHandler = async (req, res, next) => {
         });
 
         res.status(201).send({
-            data: {
-                room: room,
-                bank: userBank,
-                freeParking: freeParking,
-                log: log,
-            },
+            id: userJoined.id,
+            username: userJoined.username,
+            email: userJoined.email,
+            roomId: userJoined.roomId,
+            token: req.token,
         });
     } catch (error) {
         next(error);
@@ -99,7 +116,7 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
         });
 
         if (!room) {
-            throw createHttpError(400, "Cannot find room");
+            throw createHttpError(400, "Room does not exist");
         }
         if (isUserInRoom?.roomId) {
             throw createHttpError(409, "User is already in a room");
@@ -257,7 +274,7 @@ export const getRoom: RequestHandler = async (req, res, next) => {
             throw createHttpError(404, "Room not found");
         }
 
-        res.status(200).send({ room });
+        res.status(200).send(room);
     } catch (error) {
         next(error);
     }

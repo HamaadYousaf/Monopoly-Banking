@@ -101,31 +101,3 @@ export async function logoutUser(): Promise<User> {
 
     return res;
 }
-
-export async function joinRoom(
-    loggedInUser: User | null,
-    roomId: string
-): Promise<User> {
-    const res = await fetchData(
-        "http://localhost:5000/api/room/join",
-        "POST",
-        loggedInUser,
-        { data: { roomId: roomId } }
-    );
-
-    return res;
-}
-
-export async function leaveRoom(
-    loggedInUser: User | null,
-    roomId: string
-): Promise<boolean> {
-    const res = await fetchData(
-        "http://localhost:5000/api/room/leave",
-        "POST",
-        loggedInUser,
-        { data: { roomId: roomId } }
-    );
-
-    return res;
-}

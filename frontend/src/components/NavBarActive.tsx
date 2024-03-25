@@ -1,5 +1,5 @@
 import { User } from "../models/user";
-import * as userApi from "../api/userApi";
+import * as roomApi from "../api/roomApi";
 import { useNavigate } from "react-router-dom";
 
 interface NavBarActiveProps {
@@ -13,7 +13,7 @@ const NavBarActive = ({ loggedInUser, setView }: NavBarActiveProps) => {
     const handleLeave = async () => {
         try {
             if (loggedInUser?.roomId) {
-                const user = await userApi.leaveRoom(
+                const user = await roomApi.leaveRoom(
                     loggedInUser,
                     loggedInUser?.roomId
                 );
