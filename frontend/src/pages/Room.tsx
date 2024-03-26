@@ -22,7 +22,7 @@ const RoomView = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        async function fetchLoggedInUser() {
+        async function fetchData() {
             try {
                 setLoading(true);
                 const user = await userApi.getLoggedInUser(
@@ -35,6 +35,9 @@ const RoomView = () => {
                 }
 
                 const fetchRoom = await roomApi.getRoom(loggedInUser.current);
+                if (!fetchRoom) {
+                    navigate("/");
+                }
                 setRoom(fetchRoom);
 
                 if (fetchRoom.banker === loggedInUser.current.username) {
@@ -47,7 +50,7 @@ const RoomView = () => {
                 console.error(error);
             }
         }
-        fetchLoggedInUser();
+        fetchData();
     }, [navigate]);
 
     return (
@@ -71,7 +74,12 @@ const RoomView = () => {
                             <p className="md:text-[1.5rem] text-[1.4rem]">
                                 Banker: {room?.banker}
                             </p>
-                            {view === "home" && <GameHome />}
+                            {view === "home" && (
+                                <GameHome
+                                    room={room}
+                                    loggedInUser={loggedInUser.current}
+                                />
+                            )}
                             {view === "bank" && <Bank />}
                             {view === "history" && <History />}
                         </div>
