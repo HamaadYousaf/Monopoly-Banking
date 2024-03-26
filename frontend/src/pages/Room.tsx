@@ -14,6 +14,7 @@ const RoomView = () => {
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState("home");
     const [room, setRoom] = useState<Room | null>(null);
+    const [banker, setBanker] = useState(false);
 
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
@@ -21,18 +22,27 @@ const RoomView = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        async function fetchLoggedInUser() {
+        async function fetchData() {
             try {
                 setLoading(true);
                 const user = await userApi.getLoggedInUser(
                     loggedInUser.current
                 );
                 loggedInUser.current = user;
+
                 if (!user.roomId) {
                     navigate("/");
                 }
+
                 const fetchRoom = await roomApi.getRoom(loggedInUser.current);
+                if (!fetchRoom) {
+                    navigate("/");
+                }
                 setRoom(fetchRoom);
+
+                if (fetchRoom.banker === loggedInUser.current.username) {
+                    setBanker(true);
+                }
                 setLoading(false);
             } catch (error) {
                 navigate("/login");
@@ -40,7 +50,7 @@ const RoomView = () => {
                 console.error(error);
             }
         }
-        fetchLoggedInUser();
+        fetchData();
     }, [navigate]);
 
     return (
@@ -54,16 +64,22 @@ const RoomView = () => {
                     <NavBarActive
                         loggedInUser={loggedInUser.current}
                         setView={setView}
+                        banker={banker}
                     />
-                    <div className="flex justify-center mt-14 font-bold text-4xl text-font">
+                    <div className="flex justify-center md:mt-14 mt-8 font-bold md:text-4xl text-2xl text-font">
                         <div className="text-center">
-                            <p className="pb-0 text-[1.5rem]">
+                            <p className="md:text-[1.5rem] text-[1.4rem]">
                                 Room ID: {room?.id}
                             </p>
-                            <p className=" text-[1.5rem]">
+                            <p className="md:text-[1.5rem] text-[1.4rem]">
                                 Banker: {room?.banker}
                             </p>
-                            {view === "home" && <GameHome />}
+                            {view === "home" && (
+                                <GameHome
+                                    room={room}
+                                    loggedInUser={loggedInUser.current}
+                                />
+                            )}
                             {view === "bank" && <Bank />}
                             {view === "history" && <History />}
                         </div>

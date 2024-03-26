@@ -4,4 +4,12 @@ export interface User {
     roomId: string;
     token?: string;
     username: string;
+    Bank?: Array<Bank>;
+}
+
+export interface Bank {
+    id: string;
+    roomId: string;
+    userId: string;
+    balance: number;
 }
