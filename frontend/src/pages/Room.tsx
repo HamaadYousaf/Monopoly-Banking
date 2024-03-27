@@ -68,12 +68,6 @@ const RoomView = () => {
                     />
                     <div className="flex justify-center md:mt-14 mt-8 font-bold md:text-4xl text-2xl text-font">
                         <div className="text-center">
-                            <p className="md:text-[1.5rem] text-[1.4rem]">
-                                Room ID: {room?.id}
-                            </p>
-                            <p className="md:text-[1.5rem] text-[1.4rem]">
-                                Banker: {room?.banker}
-                            </p>
                             {view === "home" && (
                                 <GameHome
                                     room={room}

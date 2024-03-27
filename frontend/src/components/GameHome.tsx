@@ -9,9 +9,15 @@ interface GameHomeProps {
 const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
     return (
         <>
-            <div className="grid grid-cols-3 gap-32 mt-10">
+            <p className="md:text-[1.5rem] text-[1.4rem]">
+                Room ID: {room?.id}
+            </p>
+            <p className="md:text-[1.5rem] text-[1.4rem]">
+                Banker: {room?.banker}
+            </p>
+            <div className="grid md:grid-cols-3 grid-cols-1 md:gap-32 gap-10 mt-10 mb-10">
                 <div key={loggedInUser?.username}>
-                    <div className="card w-64 h-52 bg-white shadow-xl">
+                    <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
                         <div className="card-body p-0">
                             <h2 className="card-title justify-center text-2xl mt-14 text-[#333333]">
                                 {loggedInUser?.username}
@@ -44,7 +50,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                         user.username !== loggedInUser?.username
                             ? (view = (
                                   <div key={user.username}>
-                                      <div className="card w-64 h-52 bg-white shadow-xl">
+                                      <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
                                           <div className="card-body p-0">
                                               <h2 className="card-title justify-center text-2xl mt-8 text-[#333333]">
                                                   {user.username}
@@ -58,7 +64,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                                                   <input
                                                       type="text"
                                                       placeholder="$"
-                                                      className="text-center input w-full max-w-xs bg-white h-8 pt-1 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none"
+                                                      className="text-center input w-full max-w-xs bg-white md:h-8 h-10 md:pt-1 pt-0 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none"
                                                       onChange={() => {}}
                                                   />
                                                   <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-0 text-lg w-full rounded-b-2xl">
@@ -74,7 +80,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
 
                     return view;
                 })}
-                <div className="card w-64 h-48 bg-white shadow-xl">
+                <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
                     <div className="card-body p-0">
                         <h2 className="card-title justify-center text-2xl mt-8 text-[#333333]">
                             Player 1
@@ -86,12 +92,24 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                             <input
                                 type="text"
                                 placeholder="$"
-                                className="text-center input w-full max-w-xs bg-white h-8 pt-1 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none"
+                                className="text-center input w-full max-w-xs bg-white md:h-8 h-10 md:pt-1 pt-0 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none"
                                 onChange={() => {}}
                             />
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-0 text-lg w-full rounded-b-2xl">
                                 Send
                             </button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div className="card d:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
+                        <div className="card-body p-0">
+                            <h2 className="card-title justify-center text-2xl mt-14 text-[#333333]">
+                                Free Parking
+                            </h2>
+                            <h2 className="text-xl text-[#444444]">
+                                ${room?.FreeParking[0].balance}
+                            </h2>
                         </div>
                     </div>
                 </div>
