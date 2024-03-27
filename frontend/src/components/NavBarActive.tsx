@@ -95,7 +95,7 @@ const NavBarActive = ({ loggedInUser, setView, banker }: NavBarActiveProps) => {
                     <ul className="menu menu-horizontal px-1">
                         <li>
                             <button
-                                className="hover:bg-gray-300"
+                                className="hover:bg-gray-300 text-base"
                                 onClick={() => setView("home")}
                             >
                                 Home
@@ -104,7 +104,7 @@ const NavBarActive = ({ loggedInUser, setView, banker }: NavBarActiveProps) => {
                         {banker && (
                             <li>
                                 <button
-                                    className="hover:bg-gray-300"
+                                    className="hover:bg-gray-300 text-base"
                                     onClick={() => setView("bank")}
                                 >
                                     Bank
@@ -114,7 +114,7 @@ const NavBarActive = ({ loggedInUser, setView, banker }: NavBarActiveProps) => {
 
                         <li>
                             <button
-                                className="hover:bg-gray-300"
+                                className="hover:bg-gray-300 text-base"
                                 onClick={() => setView("history")}
                             >
                                 History
