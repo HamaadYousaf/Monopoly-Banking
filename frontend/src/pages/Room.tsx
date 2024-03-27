@@ -7,6 +7,7 @@ import GameHome from "../components/GameHome";
 import History from "../components/History";
 import Loading from "../components/Loading";
 import NavBarActive from "../components/NavBarActive";
+import { Logs } from "../models/log";
 import { Room } from "../models/room";
 import { User } from "../models/user";
 
@@ -14,6 +15,7 @@ const RoomView = () => {
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState("home");
     const [room, setRoom] = useState<Room | null>(null);
+    const [logs, setLogs] = useState<Logs | null>(null);
     const [banker, setBanker] = useState(false);
 
     const loggedInUser = useRef<User | null>(
@@ -43,6 +45,10 @@ const RoomView = () => {
                 if (fetchRoom.banker === loggedInUser.current.username) {
                     setBanker(true);
                 }
+
+                const fetchLogs = await roomApi.getLogs(loggedInUser.current);
+                setLogs(fetchLogs);
+
                 setLoading(false);
             } catch (error) {
                 navigate("/login");
@@ -66,7 +72,7 @@ const RoomView = () => {
                         setView={setView}
                         banker={banker}
                     />
-                    <div className="flex justify-center md:mt-14 mt-8 font-bold md:text-4xl text-2xl text-font">
+                    <div className="flex justify-center md:mt-14 mt-8 font-bold md:text-4xl text-2xl text-font ">
                         <div className="text-center">
                             {view === "home" && (
                                 <GameHome
@@ -75,7 +81,7 @@ const RoomView = () => {
                                 />
                             )}
                             {view === "bank" && <Bank />}
-                            {view === "history" && <History />}
+                            {view === "history" && <History logs={logs} />}
                         </div>
                     </div>
                 </>

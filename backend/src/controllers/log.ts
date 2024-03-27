@@ -33,7 +33,7 @@ export const getLogs: RequestHandler = async (req, res, next) => {
             throw createHttpError(400, "Logs not found");
         }
 
-        res.status(200).send({ data: logs });
+        res.status(200).send(logs);
     } catch (error) {
         next(error);
     }

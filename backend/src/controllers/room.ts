@@ -142,6 +142,14 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        await prismaInstance.log.create({
+            data: {
+                message: `${userJoined.username} joined the room`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
         res.status(201).send({
             id: userJoined.id,
             username: userJoined.username,

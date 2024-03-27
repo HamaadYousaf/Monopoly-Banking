@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { Logs } from "../models/log";
 import { Room } from "../models/room";
 import { User } from "../models/user";
 import {
@@ -88,6 +89,16 @@ export async function leaveRoom(
         "POST",
         loggedInUser,
         { data: { roomId: roomId } }
+    );
+
+    return res;
+}
+
+export async function getLogs(loggedInUser: User | null): Promise<Logs> {
+    const res = await fetchData(
+        `http://localhost:5000/api/logs/${loggedInUser?.roomId}`,
+        "GET",
+        loggedInUser
     );
 
     return res;

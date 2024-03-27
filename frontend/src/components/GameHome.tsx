@@ -15,9 +15,9 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
             <p className="md:text-[1.5rem] text-[1.4rem]">
                 Banker: {room?.banker}
             </p>
-            <div className="grid md:grid-cols-3 grid-cols-1 md:gap-32 gap-10 mt-10 mb-10">
+            <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 md:gap-32 gap-10 mt-10 mb-10">
                 <div key={loggedInUser?.username}>
-                    <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
+                    <div className="card md:w-64 md:h-52 w-54 h-52 bg-white shadow-xl">
                         <div className="card-body p-0">
                             <h2 className="card-title justify-center text-2xl mt-14 text-[#333333]">
                                 {loggedInUser?.username}
@@ -50,7 +50,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                         user.username !== loggedInUser?.username
                             ? (view = (
                                   <div key={user.username}>
-                                      <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
+                                      <div className="card md:w-64 md:h-52 w-54 h-52 bg-white shadow-xl">
                                           <div className="card-body p-0">
                                               <h2 className="card-title justify-center text-2xl mt-8 text-[#333333]">
                                                   {user.username}
@@ -80,7 +80,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
 
                     return view;
                 })}
-                <div className="card md:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
+                <div className="card md:w-64 md:h-52 w-54 h-52 bg-white shadow-xl">
                     <div className="card-body p-0">
                         <h2 className="card-title justify-center text-2xl mt-8 text-[#333333]">
                             Player 1
@@ -102,7 +102,7 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                     </div>
                 </div>
                 <div>
-                    <div className="card d:w-64 md:h-52 w-58 h-52 bg-white shadow-xl">
+                    <div className="card d:w-64 md:h-52 w-54 h-52 bg-white shadow-xl">
                         <div className="card-body p-0">
                             <h2 className="card-title justify-center text-2xl mt-14 text-[#333333]">
                                 Free Parking
