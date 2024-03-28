@@ -80,7 +80,12 @@ const RoomView = () => {
                                     loggedInUser={loggedInUser.current}
                                 />
                             )}
-                            {view === "bank" && <Bank />}
+                            {view === "bank" && (
+                                <Bank
+                                    room={room}
+                                    loggedInUser={loggedInUser.current}
+                                />
+                            )}
                             {view === "history" && <History logs={logs} />}
                         </div>
                     </div>
