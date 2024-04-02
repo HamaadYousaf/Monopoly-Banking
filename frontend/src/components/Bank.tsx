@@ -84,13 +84,49 @@ const Bank = ({ room, loggedInUser }: BankProps) => {
                         }}
                     />
                     <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 md:px-4 px-0 m-0 text-lg w-full rounded-e-2xl"
-                        onClick={handleClick}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 md:px-2 px-0 m-0 text-lg w-full rounded-e-2xl"
+                        onClick={() => {
+                            if (document && amountString && username) {
+                                (
+                                    document.getElementById(
+                                        "my_modal_1"
+                                    ) as HTMLFormElement
+                                ).showModal();
+                            } else {
+                                setError("Missing parameters");
+                            }
+                        }}
                     >
                         Send
                     </button>
                 </div>
             </div>
+            {username && amountString && (
+                <dialog
+                    id="my_modal_1"
+                    className="modal modal-bottom sm:modal-middle"
+                >
+                    <div className="modal-box bg-white text-2xl md:w-fit md:pb-0 pb-10">
+                        <p className="py-4">
+                            {`Confirm deposit of ${amountString} to ${username}`}
+                        </p>
+                        <div className="modal-action justify-center">
+                            <button
+                                className="btn mr-8 bg-green-500 font-bold hover:bg-green-700"
+                                onClick={(e) => handleClick(e)}
+                            >
+                                Confirm
+                            </button>
+                            <form method="dialog">
+                                {/* if there is a button in form, it will close the modal */}
+                                <button className="btn ml-8 bg-red-500 font-bold hover:bg-red-700">
+                                    Close
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </dialog>
+            )}
         </>
     );
 };
