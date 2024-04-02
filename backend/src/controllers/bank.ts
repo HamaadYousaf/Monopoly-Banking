@@ -130,9 +130,11 @@ export const transfer: RequestHandler<
 };
 
 interface DepositBody {
-    userId: string;
-    roomId: string;
-    amount: number;
+    data: {
+        username: string;
+        roomId: string;
+        amount: number;
+    };
 }
 
 export const deposit: RequestHandler<
@@ -141,18 +143,26 @@ export const deposit: RequestHandler<
     DepositBody,
     unknown
 > = async (req, res, next) => {
-    const userId = req.body.userId;
-    const roomId = req.body.roomId;
-    const amount = req.body.amount;
+    const username = req.body.data.username;
+    const roomId = req.body.data.roomId;
+    const amount = req.body.data.amount;
 
     try {
-        if (!userId || !roomId || !amount) {
+        if (!username || !roomId || !amount) {
             throw createHttpError(400, "Missing parameters");
+        }
+
+        const user = await prismaInstance.user.findUnique({
+            where: { username: username },
+        });
+
+        if (!user || !user.id) {
+            throw createHttpError(409, "Cannot find user");
         }
 
         const userBank = await prismaInstance.bank.findFirst({
             where: {
-                userId: userId,
+                userId: user.id,
             },
             include: {
                 user: true,
@@ -165,16 +175,16 @@ export const deposit: RequestHandler<
 
         const newBalance = amount + userBank.balance;
 
-        const newUserBank = await prismaInstance.bank.update({
+        await prismaInstance.bank.update({
             where: {
-                userId: userId,
+                userId: user.id,
             },
             data: {
                 balance: newBalance,
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `The Bank sent $${amount} to ${userBank.user.username}`,
                 time: moment().format("h:mm a"),
@@ -182,7 +192,7 @@ export const deposit: RequestHandler<
             },
         });
 
-        res.status(201).send({ data: { user: newUserBank, log: log } });
+        res.status(201).send({ success: true });
     } catch (error) {
         next(error);
     }
