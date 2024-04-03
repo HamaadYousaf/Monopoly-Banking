@@ -1,5 +1,6 @@
 import { Room } from "../models/room";
 import { User } from "../models/user";
+import Player from "./Player";
 
 interface GameHomeProps {
     room: Room | null;
@@ -7,6 +8,7 @@ interface GameHomeProps {
 }
 
 const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
+    const handleClaim = () => {};
     return (
         <>
             <p className="md:text-[1.5rem] text-[1.4rem]">
@@ -45,35 +47,15 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                 </div>
                 {room?.users.map((user) => {
                     let view;
-
                     {
-                        user.username !== loggedInUser?.username
+                        user.username !== loggedInUser?.username && loggedInUser
                             ? (view = (
-                                  <div key={user.username}>
-                                      <div className="card md:w-64 md:h-52 w-54 h-52 bg-white shadow-xl">
-                                          <div className="card-body p-0">
-                                              <h2 className="card-title justify-center text-2xl mt-8 text-[#333333]">
-                                                  {user.username}
-                                              </h2>
-                                              {user.Bank && (
-                                                  <h2 className="text-lg text-[#444444]">
-                                                      ${user.Bank[0].balance}
-                                                  </h2>
-                                              )}
-                                              <div className="mt-auto">
-                                                  <input
-                                                      type="text"
-                                                      placeholder="$"
-                                                      className="text-center input w-full max-w-xs bg-white md:h-8 h-10 md:pt-1 pt-0 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none text-lg"
-                                                      onChange={() => {}}
-                                                  />
-                                                  <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-0 text-lg w-full rounded-b-2xl">
-                                                      Send
-                                                  </button>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  </div>
+                                  <Player
+                                      key={user.username}
+                                      loggedInUser={loggedInUser}
+                                      user={user}
+                                      room={room}
+                                  />
                               ))
                             : null;
                     }
@@ -96,7 +78,10 @@ const GameHome = ({ room, loggedInUser }: GameHomeProps) => {
                                     className="text-center input w-full max-w-xs bg-white md:h-8 h-10 md:pt-1 pt-0 border-x-0 border-b-0 border-t-[1px] border-solid border-[#BBBBBB] focus:outline-none focus:border-[#BBBBBB] rounded-none text-lg"
                                     onChange={() => {}}
                                 />
-                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-0 text-lg w-full rounded-b-2xl">
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-0 text-lg w-full rounded-b-2xl"
+                                    onClick={handleClaim}
+                                >
                                     Send
                                 </button>
                             </div>

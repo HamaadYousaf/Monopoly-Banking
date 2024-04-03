@@ -60,17 +60,11 @@ const Deposit = ({ loggedInUser, room }: DepositProps) => {
                         <option value="" disabled>
                             Player
                         </option>
-                        {room?.users.map(
-                            (user) =>
-                                user.username !== loggedInUser?.username && (
-                                    <option
-                                        key={user.username}
-                                        value={user.username}
-                                    >
-                                        {user.username}
-                                    </option>
-                                )
-                        )}
+                        {room?.users.map((user) => (
+                            <option key={user.username} value={user.username}>
+                                {user.username}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div className="flex justify-end w-1/2">

@@ -1,9 +1,9 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { User } from "../models/user";
 import {
-    UnauthorizedError,
-    ConflictError,
     BadRequestError,
+    ConflictError,
+    UnauthorizedError,
 } from "../utils/http_errors";
 
 const fetchData = async (
@@ -54,6 +54,24 @@ interface DepositBody {
 export const deposit = async (body: DepositBody): Promise<string> => {
     const res = await fetchData(
         `http://localhost:5000/api/bank/deposit`,
+        "POST",
+        body.loggedInUser,
+        { data: body }
+    );
+
+    return res;
+};
+
+interface TransferBody {
+    loggedInUser: User;
+    usernameReceive: string;
+    roomId: string;
+    amount: number;
+}
+
+export const transfer = async (body: TransferBody): Promise<string> => {
+    const res = await fetchData(
+        `http://localhost:5000/api/bank/transfer`,
         "POST",
         body.loggedInUser,
         { data: body }
