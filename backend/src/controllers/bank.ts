@@ -27,10 +27,11 @@ export const getBalance: RequestHandler = async (req, res, next) => {
 };
 
 interface TransferBody {
-    userIdSend: string;
-    userIdReceive: string;
-    roomId: string;
-    amount: number;
+    data: {
+        usernameReceive: string;
+        roomId: string;
+        amount: number;
+    };
 }
 
 export const transfer: RequestHandler<
@@ -39,21 +40,14 @@ export const transfer: RequestHandler<
     TransferBody,
     unknown
 > = async (req, res, next) => {
-    const userIdSend = req.body.userIdSend;
-    const userIdReceive = req.body.userIdReceive;
-    const roomId = req.body.roomId;
-    const amount = req.body.amount;
+    const userIdSend = req.id;
+    const usernameReceive = req.body.data.usernameReceive;
+    const roomId = req.body.data.roomId;
+    const amount = req.body.data.amount;
 
     try {
-        if (!userIdSend || !userIdReceive || !roomId || !amount) {
+        if (!userIdSend || !usernameReceive || !roomId || !amount) {
             throw createHttpError(400, "Missing parameters");
-        }
-
-        if (userIdSend === userIdReceive) {
-            throw createHttpError(
-                400,
-                "User cannot be both sender and reciever"
-            );
         }
 
         const userBankSend = await prismaInstance.bank.findFirst({
@@ -65,9 +59,20 @@ export const transfer: RequestHandler<
             },
         });
 
+        const user = await prismaInstance.user.findUnique({
+            where: { username: usernameReceive },
+        });
+
+        if (userIdSend === user?.id) {
+            throw createHttpError(
+                400,
+                "User cannot be both sender and reciever"
+            );
+        }
+
         const userBankReceive = await prismaInstance.bank.findFirst({
             where: {
-                userId: userIdReceive,
+                userId: user?.id,
             },
             include: {
                 user: true,
@@ -91,7 +96,7 @@ export const transfer: RequestHandler<
 
         const newBalanceRecieve = userBankReceive.balance + amount;
 
-        const newUserBankSend = await prismaInstance.bank.update({
+        await prismaInstance.bank.update({
             where: {
                 userId: userIdSend,
             },
@@ -100,16 +105,16 @@ export const transfer: RequestHandler<
             },
         });
 
-        const newUserBankReceive = await prismaInstance.bank.update({
+        await prismaInstance.bank.update({
             where: {
-                userId: userIdReceive,
+                userId: user?.id,
             },
             data: {
                 balance: newBalanceRecieve,
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${userBankSend.user.username} sent $${amount} to ${userBankReceive.user.username}`,
                 time: moment().format("h:mm a"),
@@ -117,22 +122,30 @@ export const transfer: RequestHandler<
             },
         });
 
-        res.status(201).send({
-            data: {
-                sender: newUserBankSend,
-                reciever: newUserBankReceive,
-                log: log,
+        const room = await prismaInstance.room.findUnique({
+            where: {
+                id: roomId,
+            },
+            include: {
+                users: {
+                    include: { Bank: true },
+                },
+                FreeParking: { select: { balance: true } },
             },
         });
+
+        res.status(201).send(room);
     } catch (error) {
         next(error);
     }
 };
 
 interface DepositBody {
-    userId: string;
-    roomId: string;
-    amount: number;
+    data: {
+        username: string;
+        roomId: string;
+        amount: number;
+    };
 }
 
 export const deposit: RequestHandler<
@@ -141,18 +154,26 @@ export const deposit: RequestHandler<
     DepositBody,
     unknown
 > = async (req, res, next) => {
-    const userId = req.body.userId;
-    const roomId = req.body.roomId;
-    const amount = req.body.amount;
+    const username = req.body.data.username;
+    const roomId = req.body.data.roomId;
+    const amount = req.body.data.amount;
 
     try {
-        if (!userId || !roomId || !amount) {
+        if (!username || !roomId || !amount) {
             throw createHttpError(400, "Missing parameters");
+        }
+
+        const user = await prismaInstance.user.findUnique({
+            where: { username: username },
+        });
+
+        if (!user || !user.id) {
+            throw createHttpError(409, "Cannot find user");
         }
 
         const userBank = await prismaInstance.bank.findFirst({
             where: {
-                userId: userId,
+                userId: user.id,
             },
             include: {
                 user: true,
@@ -165,16 +186,16 @@ export const deposit: RequestHandler<
 
         const newBalance = amount + userBank.balance;
 
-        const newUserBank = await prismaInstance.bank.update({
+        await prismaInstance.bank.update({
             where: {
-                userId: userId,
+                userId: user.id,
             },
             data: {
                 balance: newBalance,
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `The Bank sent $${amount} to ${userBank.user.username}`,
                 time: moment().format("h:mm a"),
@@ -182,7 +203,7 @@ export const deposit: RequestHandler<
             },
         });
 
-        res.status(201).send({ data: { user: newUserBank, log: log } });
+        res.status(201).send({ success: true });
     } catch (error) {
         next(error);
     }

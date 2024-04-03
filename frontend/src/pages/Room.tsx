@@ -84,6 +84,7 @@ const RoomView = () => {
                                 <Bank
                                     room={room}
                                     loggedInUser={loggedInUser.current}
+                                    setRoom={setRoom}
                                 />
                             )}
                             {view === "history" && <History logs={logs} />}

@@ -344,8 +344,15 @@ export const setBanker: RequestHandler<
         const newRoom = await prismaInstance.room.update({
             where: { id: roomId },
             data: { banker: newBanker.username },
+            include: {
+                users: {
+                    include: { Bank: true },
+                },
+                FreeParking: { select: { balance: true } },
+            },
         });
 
+        console.log(newRoom);
         res.status(201).send(newRoom);
     } catch (error) {
         next(error);

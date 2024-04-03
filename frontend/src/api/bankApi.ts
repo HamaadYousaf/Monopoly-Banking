@@ -1,6 +1,4 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { Logs } from "../models/log";
-import { Room } from "../models/room";
 import { User } from "../models/user";
 import {
     BadRequestError,
@@ -46,77 +44,38 @@ const fetchData = async (
     }
 };
 
-export async function getRoom(loggedInUser: User | null): Promise<Room> {
-    const res = await fetchData(
-        `http://localhost:5000/api/room/${loggedInUser?.roomId}`,
-        "GET",
-        loggedInUser
-    );
-
-    return res;
-}
-
-export async function createRoom(loggedInUser: User | null): Promise<User> {
-    const res = await fetchData(
-        `http://localhost:5000/api/room/create`,
-        "POST",
-        loggedInUser
-    );
-
-    return res;
-}
-
-export async function joinRoom(
-    loggedInUser: User | null,
-    roomId: string
-): Promise<User> {
-    const res = await fetchData(
-        "http://localhost:5000/api/room/join",
-        "POST",
-        loggedInUser,
-        { data: { roomId: roomId } }
-    );
-
-    return res;
-}
-
-export async function leaveRoom(
-    loggedInUser: User | null,
-    roomId: string
-): Promise<boolean> {
-    const res = await fetchData(
-        "http://localhost:5000/api/room/leave",
-        "POST",
-        loggedInUser,
-        { data: { roomId: roomId } }
-    );
-
-    return res;
-}
-
-export async function getLogs(loggedInUser: User | null): Promise<Logs> {
-    const res = await fetchData(
-        `http://localhost:5000/api/logs/${loggedInUser?.roomId}`,
-        "GET",
-        loggedInUser
-    );
-
-    return res;
-}
-
-interface SetBankerBody {
+interface DepositBody {
     loggedInUser: User;
     username: string;
     roomId: string;
+    amount: number;
 }
 
-export async function setBanker(body: SetBankerBody): Promise<Room> {
+export const deposit = async (body: DepositBody): Promise<string> => {
     const res = await fetchData(
-        `http://localhost:5000/api/room/banker`,
+        `http://localhost:5000/api/bank/deposit`,
         "POST",
         body.loggedInUser,
         { data: body }
     );
 
     return res;
+};
+
+interface TransferBody {
+    loggedInUser: User;
+    usernameReceive: string;
+    roomId: string;
+    amount: number;
 }
+
+export const transfer = async (body: TransferBody): Promise<string> => {
+    const res = await fetchData(
+        `http://localhost:5000/api/bank/transfer`,
+        "POST",
+        body.loggedInUser,
+        { data: body }
+    );
+
+    return res;
+};
