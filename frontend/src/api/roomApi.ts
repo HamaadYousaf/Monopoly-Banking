@@ -103,3 +103,20 @@ export async function getLogs(loggedInUser: User | null): Promise<Logs> {
 
     return res;
 }
+
+interface SetBankerBody {
+    loggedInUser: User;
+    username: string;
+    roomId: string;
+}
+
+export async function setBanker(body: SetBankerBody): Promise<Room> {
+    const res = await fetchData(
+        `http://localhost:5000/api/room/banker`,
+        "POST",
+        body.loggedInUser,
+        { data: body }
+    );
+
+    return res;
+}
