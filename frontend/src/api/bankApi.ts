@@ -79,3 +79,22 @@ export const transfer = async (body: TransferBody): Promise<string> => {
 
     return res;
 };
+
+interface sendFreeParkingBody {
+    loggedInUser: User;
+    roomId: string;
+    amount: number;
+}
+
+export const sendFreeParking = async (
+    body: sendFreeParkingBody
+): Promise<string> => {
+    const res = await fetchData(
+        `http://localhost:5000/api/bank/sendParking`,
+        "POST",
+        body.loggedInUser,
+        { data: body }
+    );
+
+    return res;
+};
