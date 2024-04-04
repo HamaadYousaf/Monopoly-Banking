@@ -98,3 +98,22 @@ export const sendFreeParking = async (
 
     return res;
 };
+
+interface claimFreeParkingBody {
+    loggedInUser: User;
+    username: string;
+    roomId: string;
+}
+
+export const claimFreeParking = async (
+    body: claimFreeParkingBody
+): Promise<string> => {
+    const res = await fetchData(
+        `http://localhost:5000/api/bank/claim`,
+        "POST",
+        body.loggedInUser,
+        { data: body }
+    );
+
+    return res;
+};
