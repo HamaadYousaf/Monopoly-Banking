@@ -37,7 +37,13 @@ const Player = ({ loggedInUser, user, room }: PlayerProps) => {
                 error instanceof BadRequestError
             ) {
                 setError(error.message.replace(/["']/g, ""));
+                (
+                    document.getElementById("my_modal_1") as HTMLFormElement
+                ).close();
             } else {
+                (
+                    document.getElementById("my_modal_1") as HTMLFormElement
+                ).close();
                 alert(error);
             }
         }

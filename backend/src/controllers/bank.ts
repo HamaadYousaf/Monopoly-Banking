@@ -242,8 +242,10 @@ export const getFreeParking: RequestHandler = async (req, res, next) => {
 };
 
 interface ClaimParking {
-    userId: string;
-    roomId: string;
+    data: {
+        username: string;
+        roomId: string;
+    };
 }
 
 export const claimFreeParking: RequestHandler<
@@ -252,17 +254,21 @@ export const claimFreeParking: RequestHandler<
     ClaimParking,
     unknown
 > = async (req, res, next) => {
-    const userId = req.body.userId;
-    const roomId = req.body.roomId;
+    const username = req.body.data.username;
+    const roomId = req.body.data.roomId;
 
     try {
-        if (!userId || !roomId) {
+        if (!username || !roomId) {
             throw createHttpError(400, "Missing parameters");
         }
 
+        const user = await prismaInstance.user.findUnique({
+            where: { username: username },
+        });
+
         const userBank = await prismaInstance.bank.findFirst({
             where: {
-                userId: userId,
+                userId: user?.id,
             },
             include: {
                 user: true,
@@ -283,7 +289,7 @@ export const claimFreeParking: RequestHandler<
 
         const newUserBank = await prismaInstance.bank.update({
             where: {
-                userId: userId,
+                userId: user?.id,
             },
             data: {
                 balance: newBalance,
@@ -316,8 +322,10 @@ export const claimFreeParking: RequestHandler<
 };
 
 interface SendParkingBody {
-    roomId: string;
-    amount: number;
+    data: {
+        roomId: string;
+        amount: number;
+    };
 }
 
 export const sendFreeParking: RequestHandler<
@@ -326,9 +334,9 @@ export const sendFreeParking: RequestHandler<
     SendParkingBody,
     unknown
 > = async (req, res, next) => {
-    const userId = req.token;
-    const roomId = req.body.roomId;
-    const amount = req.body.amount;
+    const userId = req.id;
+    const roomId = req.body.data.roomId;
+    const amount = req.body.data.amount;
 
     try {
         if (!userId || !roomId || !amount) {
@@ -362,7 +370,7 @@ export const sendFreeParking: RequestHandler<
 
         const parkingBalance = freeParking.balance + amount;
 
-        const newUserBank = await prismaInstance.bank.update({
+        await prismaInstance.bank.update({
             where: {
                 userId: userId,
             },
@@ -371,7 +379,7 @@ export const sendFreeParking: RequestHandler<
             },
         });
 
-        const newFreeParking = await prismaInstance.freeParking.update({
+        await prismaInstance.freeParking.update({
             where: {
                 roomId: roomId,
             },
@@ -380,7 +388,7 @@ export const sendFreeParking: RequestHandler<
             },
         });
 
-        const log = await prismaInstance.log.create({
+        await prismaInstance.log.create({
             data: {
                 message: `${userBank.user.username} sent $${amount} to free parking`,
                 time: moment().format("h:mm a"),
@@ -388,9 +396,19 @@ export const sendFreeParking: RequestHandler<
             },
         });
 
-        res.status(201).send({
-            data: { user: newUserBank, parking: newFreeParking, log: log },
+        const room = await prismaInstance.room.findUnique({
+            where: {
+                id: roomId,
+            },
+            include: {
+                users: {
+                    include: { Bank: true },
+                },
+                FreeParking: { select: { balance: true } },
+            },
         });
+
+        res.status(201).send(room);
     } catch (error) {
         next(error);
     }
