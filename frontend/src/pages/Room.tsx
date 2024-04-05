@@ -10,6 +10,7 @@ import NavBarActive from "../components/NavBarActive";
 import { Logs } from "../models/log";
 import { Room } from "../models/room";
 import { User } from "../models/user";
+import { io, Socket } from "socket.io-client";
 
 const RoomView = () => {
     const [loading, setLoading] = useState(true);
@@ -17,11 +18,48 @@ const RoomView = () => {
     const [room, setRoom] = useState<Room | null>(null);
     const [logs, setLogs] = useState<Logs | null>(null);
     const [banker, setBanker] = useState(false);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
     const loggedInUser = useRef<User | null>(
         JSON.parse(localStorage.getItem("user") || "{}")
     );
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const socket = io("http://localhost:5000");
+        setSocket(socket);
+
+        return () => {
+            socket.close();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (socket === null) return;
+
+        socket.on("rerender", async (type) => {
+            const fetchRoom = await roomApi.getRoom(loggedInUser.current);
+
+            if (!fetchRoom) {
+                navigate("/");
+            }
+
+            const fetchLogs = await roomApi.getLogs(loggedInUser.current);
+
+            if (type === "banker-change") {
+                if (fetchRoom.banker === loggedInUser.current?.username) {
+                    setBanker(true);
+                } else {
+                    setBanker(false);
+                }
+
+                setView("home");
+            }
+
+            setLogs(fetchLogs);
+            setRoom(fetchRoom);
+        });
+    }, [navigate, socket]);
 
     useEffect(() => {
         async function fetchData() {
@@ -42,12 +80,16 @@ const RoomView = () => {
                 }
                 setRoom(fetchRoom);
 
+                socket?.emit("join-room", fetchRoom.id);
+
                 if (fetchRoom.banker === loggedInUser.current.username) {
                     setBanker(true);
                 }
 
                 const fetchLogs = await roomApi.getLogs(loggedInUser.current);
                 setLogs(fetchLogs);
+
+                socket?.emit("update", fetchRoom.id);
 
                 setLoading(false);
             } catch (error) {
@@ -57,7 +99,7 @@ const RoomView = () => {
             }
         }
         fetchData();
-    }, [navigate]);
+    }, [navigate, socket]);
 
     return (
         <>

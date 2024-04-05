@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import moment from "moment";
 import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
+import { ioInstance } from "../app";
 
 export const getBalance: RequestHandler = async (req, res, next) => {
     const userId = req.token;
@@ -134,6 +135,8 @@ export const transfer: RequestHandler<
             },
         });
 
+        ioInstance.to(roomId).emit("rerender");
+
         res.status(201).send(room);
     } catch (error) {
         next(error);
@@ -202,6 +205,8 @@ export const deposit: RequestHandler<
                 roomId: roomId,
             },
         });
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send({ success: true });
     } catch (error) {
@@ -307,11 +312,13 @@ export const claimFreeParking: RequestHandler<
 
         const log = await prismaInstance.log.create({
             data: {
-                message: `${userBank.user.username} claimed $${freeParking.balance} from free parking`,
+                message: `${userBank.user.username} claimed $${freeParking.balance} from Free Parking`,
                 time: moment().format("h:mm a"),
                 roomId: roomId,
             },
         });
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send({
             data: { user: newUserBank, parking: newParking, log: log },
@@ -390,7 +397,7 @@ export const sendFreeParking: RequestHandler<
 
         await prismaInstance.log.create({
             data: {
-                message: `${userBank.user.username} sent $${amount} to free parking`,
+                message: `${userBank.user.username} sent $${amount} to Free Parking`,
                 time: moment().format("h:mm a"),
                 roomId: roomId,
             },
@@ -407,6 +414,8 @@ export const sendFreeParking: RequestHandler<
                 FreeParking: { select: { balance: true } },
             },
         });
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send(room);
     } catch (error) {
