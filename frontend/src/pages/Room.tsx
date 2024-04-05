@@ -37,14 +37,26 @@ const RoomView = () => {
     useEffect(() => {
         if (socket === null) return;
 
-        socket.on("rerender", async () => {
+        socket.on("rerender", async (type) => {
             const fetchRoom = await roomApi.getRoom(loggedInUser.current);
+
             if (!fetchRoom) {
                 navigate("/");
             }
-            const fetchLogs = await roomApi.getLogs(loggedInUser.current);
-            setLogs(fetchLogs);
 
+            const fetchLogs = await roomApi.getLogs(loggedInUser.current);
+
+            if (type === "banker-change") {
+                if (fetchRoom.banker === loggedInUser.current?.username) {
+                    setBanker(true);
+                } else {
+                    setBanker(false);
+                }
+
+                setView("home");
+            }
+
+            setLogs(fetchLogs);
             setRoom(fetchRoom);
         });
     }, [navigate, socket]);

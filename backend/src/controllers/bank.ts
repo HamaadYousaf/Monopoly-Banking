@@ -135,6 +135,8 @@ export const transfer: RequestHandler<
             },
         });
 
+        ioInstance.to(roomId).emit("rerender");
+
         res.status(201).send(room);
     } catch (error) {
         next(error);
@@ -203,6 +205,8 @@ export const deposit: RequestHandler<
                 roomId: roomId,
             },
         });
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send({ success: true });
     } catch (error) {
@@ -410,6 +414,8 @@ export const sendFreeParking: RequestHandler<
                 FreeParking: { select: { balance: true } },
             },
         });
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send(room);
     } catch (error) {

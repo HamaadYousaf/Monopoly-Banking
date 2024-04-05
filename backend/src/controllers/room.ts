@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import moment from "moment";
 import { prismaInstance } from "../server";
 import { asserIsDefined } from "../util/assertIsDefined";
+import { ioInstance } from "../app";
 
 export const createRoom: RequestHandler = async (req, res, next) => {
     const userId = req.id;
@@ -150,6 +151,8 @@ export const joinRoom: RequestHandler = async (req, res, next) => {
             },
         });
 
+        ioInstance.to(roomId).emit("rerender");
+
         res.status(201).send({
             id: userJoined.id,
             username: userJoined.username,
@@ -233,6 +236,8 @@ export const leaveRoom: RequestHandler = async (req, res, next) => {
                 },
             });
         }
+
+        ioInstance.to(roomId).emit("rerender");
 
         res.status(201).send({
             id: userLeave.id,
@@ -352,7 +357,16 @@ export const setBanker: RequestHandler<
             },
         });
 
-        console.log(newRoom);
+        await prismaInstance.log.create({
+            data: {
+                message: `${newBanker.username} is now the Banker`,
+                time: moment().format("h:mm a"),
+                roomId: roomId,
+            },
+        });
+
+        ioInstance.to(roomId).emit("rerender", "banker-change");
+
         res.status(201).send(newRoom);
     } catch (error) {
         next(error);
